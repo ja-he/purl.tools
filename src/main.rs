@@ -1,53 +1,48 @@
-use leptonic::{
-    alert::{Alert, AlertVariant},
-    link::{LinkExt, LinkExtTarget},
-    root::Root,
-    theme::{LeptonicTheme, ThemeToggle}, button::{Button, ButtonVariant},
-};
 use leptos::*;
 use leptos_meta::{provide_meta_context, Title};
 
 #[component]
 fn App() -> impl IntoView {
     let (devstatus_accepted, set_devstatus_accepted) = create_signal(false);
+    let (light_theme, set_light_theme) = create_signal(true);
     provide_meta_context();
 
     view! {
         <Title text="purl Builder"/>
-        <Root default_theme=LeptonicTheme::default()>
             <div id="full-page">
-                <div id="cool-control-stuff">
+                <div id="header">
                     <div  id="main-title">purl Builder</div>
-                    <div  id="theme-toggle">
-                        <ThemeToggle off=LeptonicTheme::Light on=LeptonicTheme::Dark/>
+                    <div id="theme-toggle">
+                        <button id="theme-toggle-button" on:click=move |_| { set_light_theme.update(|prev| { *prev = !*prev }) }>
+                            <Show when=move || light_theme.get() fallback=move || view! { "go dark" }>"go light"</Show>
+                        </button>
                     </div>
                 </div>
                 <div id="main-content">
                     <Show
                         when=move || devstatus_accepted.get()
                         fallback=move || view! {
-                            <Alert variant=AlertVariant::Warn title=|| "In Development".into_view()>
-                                "This is in development."
+                            <p class="disclaimer-note">
+                                "This is in development. "
                                 "That means, this doesn't do much for now..."
-                            </Alert>
-                            <Button id="devstatus-accept-button" on_click=move |_| { set_devstatus_accepted.set(true) } variant=ButtonVariant::Outlined>
+                            </p>
+                            <button id="devstatus-accept-button" on:click=move |_| { set_devstatus_accepted.set(true) }>
                                 "Accept"
-                            </Button>
+                            </button>
                         }>
-                        <Alert variant=AlertVariant::Success title=|| "Good to have you!".into_view()>
+                        <p class="disclaimer-note">
                             "So like I said before, its in development, so right now there's nothing more than this here to show."
-                        </Alert>
+                        </p>
                     </Show>
                 </div>
                 <div id="footer">
                     "Created by "
-                    <LinkExt href="https://hensel.dev" target=LinkExtTarget::Blank>
+                    <a href="https://hensel.dev">
                         "Jan Hensel"
-                    </LinkExt>
+                    </a>
                     "."
                 </div>
             </div>
-        </Root>
     }
 }
 

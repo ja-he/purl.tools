@@ -2,28 +2,73 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
 
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="description" content="purl Builder" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#ccebff" />
 
   <title>purl Builder</title>
 
-  <script type="module" src="/js/tiptap-bundle.min.js"></script>
-  <script type="module" src="/js/tiptap.js"></script>
+  <link data-trunk rel="copy-file" href="./src/assets/404.html" />
 
-  <link rel="icon" href="https://em-content.zobj.net/source/apple/354/fire_1f525.png" />
-  <link rel="apple-touch-icon" href="https://em-content.zobj.net/source/apple/354/fire_1f525.png" />
+  <style>
+  body {
+    margin: 0;
+    width: 100vw;
+    min-height: 100vh;
+    font-family: Arial, Helvetica, sans-serif;
+  }
 
-  <link data-trunk rel="rust" data-wasm-opt="z" />
-  <link data-trunk rel="scss" href="scss/style.scss" />
-  <link data-trunk rel="copy-file" href="robots.txt" />
-  <link data-trunk rel="copy-dir" href="res/" />
-  <link data-trunk rel="copy-dir" href="generated/js/" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto&display=swap">
+  #full-page {
+    min-height: 100vh;
+    display: grid;
+    align-items: center;
+    justify-items: center;
+    grid-template-columns: 1fr;
+    grid-template-rows: 4em 1fr 4em;
+    grid-template-areas: "header"
+                         "main"
+                         "footer";
+  }
+  
+  #header {
+    width: 100%;
+    grid-area: header;
+    display: grid;
+    align-items: center;
+    justify-items: center;
+    grid-template-columns: 4em 1fr 4em;
+    grid-template-areas: "left center right";
+  }
+  
+  #main-title {
+    grid-area: center;
+    font-size: 2em;
+    font-weight: bold;
+  }
+  
+  #theme-toggle {
+    grid-area: right;
+  }
+  
+  #footer {
+    grid-area: footer;
+  }
+
+  .disclaimer-note {
+    max-width: 30vw;
+    text-align: center;
+  }
+
+  #devstatus-accept-button {
+    width: 100%;
+  }
+  </style>
+
 </head>
 
-<body></body>
+<body>
+</body>
 
 </html>
