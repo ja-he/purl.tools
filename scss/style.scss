@@ -1,0 +1,68 @@
+html {
+  font-size: 16px;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: var(--leptonic-vh, 100vh);
+  height: 100%;
+}
+
+@import "../generated/leptonic/leptonic-themes";
+
+[data-theme="light"] {
+  --brand-color: #14a5ff;
+}
+
+[data-theme="dark"] {
+  --brand-color: #0065a3;
+}
+
+#full-page {
+  height: 100vh;
+  display: grid;
+  justify-items: center;
+  align-items: center;
+  grid-template-columns: 1fr;
+  grid-template-rows: 4em 1fr 4em;
+  grid-template-areas: "header"
+                       "main"
+                       "footer";
+
+  --typography-font-family: Arial, sans-serif;
+}
+
+#cool-control-stuff {
+  width: 100vw;
+  grid-area: header;
+  display: grid;
+  justify-items: center;
+  align-items: center;
+  grid-template-columns: 1fr 8fr 1fr;
+  grid-template-areas: "navstuff title themetoggle";
+}
+
+#theme-toggle {
+  grid-area: themetoggle;
+}
+
+#main-title {
+  grid-area: title;
+  font-size: 2em;
+  font-weight: bold;
+}
+
+#main-content {
+  margin: auto;
+  grid-area: main;
+}
+
+#footer {
+  grid-area: footer;
+}
+
+#devstatus-accept-button {
+  margin-top: 0.5em;
+  width: 100%;
+}
