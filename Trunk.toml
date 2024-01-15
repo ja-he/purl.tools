@@ -1,6 +1,6 @@
 [build]
 target = "index.html"
-public_url = "/thaw/"
+public_url = "/"
 # release = true
 filehash = false
 
