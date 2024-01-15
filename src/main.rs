@@ -2,7 +2,6 @@ use leptos::*;
 
 #[component]
 fn App() -> impl IntoView {
-    let (devstatus_accepted, set_devstatus_accepted) = create_signal(false);
     let (light_theme, set_light_theme) = create_signal(true);
     leptos_meta::provide_meta_context();
 
@@ -18,21 +17,7 @@ fn App() -> impl IntoView {
                     </div>
                 </div>
                 <div id="main-content">
-                    <Show
-                        when=move || devstatus_accepted.get()
-                        fallback=move || view! {
-                            <p class="disclaimer-note">
-                                "This is in development. "
-                                "That means, this doesn't do much for now..."
-                            </p>
-                            <button id="devstatus-accept-button" on:click=move |_| { set_devstatus_accepted.set(true) }>
-                                "Accept"
-                            </button>
-                        }>
-                        <p class="disclaimer-note">
-                            "So like I said before, its in development, so right now there's nothing more than this here to show."
-                        </p>
-                    </Show>
+                    <MainContent/>
                 </div>
                 <div id="footer">
                     "Created by "
@@ -42,6 +27,73 @@ fn App() -> impl IntoView {
                     "."
                 </div>
             </div>
+    }
+}
+
+#[component]
+fn MainContent() -> impl IntoView {
+    // abtract: scheme:type/namespace/name@version?qualifiers#subpath
+    // eg.:     pkg:github/package-url/purl-spec@244fd47e07d1004f0aed9c
+    let (typestr, set_typestr) = create_signal("github".to_string());
+    let (namespace, set_namespace) = create_signal("ja-he".to_string());
+    let (name, set_name) = create_signal("dayplan".to_string());
+    let (version, set_version) = create_signal("v0.9.4".to_string());
+    let (qualifiers, set_qualifiers) = create_signal(None);
+    let (subpath, set_subpath) = create_signal(None);
+
+    view! {
+        <Purl
+            typestr={typestr}
+            namespace={namespace}
+            name={name}
+            version={version}
+            qualifiers={qualifiers}
+            subpath={subpath}
+        />
+    }
+}
+
+#[component]
+fn Purl(
+    typestr: ReadSignal<String>,
+    namespace: ReadSignal<String>,
+    name: ReadSignal<String>,
+    version: ReadSignal<String>,
+    qualifiers: ReadSignal<Option<String>>,
+    subpath: ReadSignal<Option<String>>,
+) -> impl IntoView {
+    let qualifiers_rendered = move || {
+        qualifiers.get().is_some().then(|| {
+            view! {
+                <span class="purl-sep">?</span>
+                <span class="purl-qualifiers">{qualifiers}</span>
+            }
+        })
+    };
+    let subpath_rendered = move || {
+        subpath.get().is_some().then(|| {
+            view! {
+                <span class="purl-sep">?</span>
+                <span class="purl-subpath">{subpath}</span>
+            }
+        })
+    };
+
+    // abtract: scheme:type/namespace/name@version?qualifiers#subpath
+    view! {
+        <div class="purl">
+            <span class="purl-scheme">"pkg"</span>
+            <span class="purl-sep">:</span>
+            <span class="purl-type">{typestr}</span>
+            <span class="purl-sep">/</span>
+            <span class="purl-namespace">{namespace}</span>
+            <span class="purl-sep">/</span>
+            <span class="purl-name">{name}</span>
+            <span class="purl-sep">@</span>
+            <span class="purl-version">{version}</span>
+            {qualifiers_rendered()}
+            {subpath_rendered()}
+        </div>
     }
 }
 
