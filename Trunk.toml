@@ -1,7 +1,7 @@
 [build]
 target = "index.html"
-public_url = "/"
-# release = true
+public_url = "https://purltools.hensel.dev/"
+release = true
 filehash = false
 
 [watch]
