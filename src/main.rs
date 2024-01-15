@@ -1,5 +1,7 @@
 use leptos::*;
 
+mod purl_data;
+
 #[component]
 fn App() -> impl IntoView {
     let (light_theme, set_light_theme) = create_signal(true);
@@ -44,10 +46,18 @@ fn MainContent() -> impl IntoView {
     view! {
         <div id="input-form">
             <span class="input-label">"type"</span>
-            <input type="text"
-                on:input=move |ev| { set_typestr(event_target_value(&ev)); }
-                prop:value=typestr
-            />
+            <select on:change=move |ev| {
+                let new_value = event_target_value(&ev);
+                set_typestr(new_value);
+            }>
+                {
+                    purl_data::PURL_TYPES.iter()
+                        .map(|(type_option, choice_well_known)| view! {
+                            <PurlTypeOption typestr is=type_option well_known=*choice_well_known/>
+                        })
+                        .collect_view()
+                 }
+            </select>
             <span class="input-label">"namespace"</span>
             <input type="text"
                 on:input=move |ev| { set_namespace(event_target_value(&ev)); }
@@ -99,6 +109,27 @@ fn MainContent() -> impl IntoView {
 }
 
 #[component]
+pub fn PurlTypeOption(
+    is: &'static str,
+    typestr: ReadSignal<String>,
+    well_known: bool,
+) -> impl IntoView {
+    view! {
+        <option
+            class={ if well_known {
+                "well-known-type"
+            } else {
+                "proposed-type"
+            }}
+            value=is
+            selected=move || typestr() == is
+        >
+            {is}
+        </option>
+    }
+}
+
+#[component]
 fn Purl(
     typestr: ReadSignal<String>,
     namespace: ReadSignal<String>,
@@ -107,7 +138,6 @@ fn Purl(
     qualifiers: ReadSignal<Option<String>>,
     subpath: ReadSignal<Option<String>>,
 ) -> impl IntoView {
-
     // abtract: scheme:type/namespace/name@version?qualifiers#subpath
     view! {
         <div class="purl">
