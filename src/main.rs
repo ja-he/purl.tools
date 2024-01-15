@@ -42,6 +42,51 @@ fn MainContent() -> impl IntoView {
     let (subpath, set_subpath) = create_signal(None);
 
     view! {
+        <div id="input-form">
+            <span class="input-label">"type"</span>
+            <input type="text"
+                on:input=move |ev| { set_typestr(event_target_value(&ev)); }
+                prop:value=typestr
+            />
+            <span class="input-label">"namespace"</span>
+            <input type="text"
+                on:input=move |ev| { set_namespace(event_target_value(&ev)); }
+                prop:value=namespace
+            />
+            <span class="input-label">"name"</span>
+            <input type="text"
+                on:input=move |ev| { set_name(event_target_value(&ev)); }
+                prop:value=name
+            />
+            <span class="input-label">"version"</span>
+            <input type="text"
+                on:input=move |ev| { set_version(event_target_value(&ev)); }
+                prop:value=version
+            />
+            <span class="input-label">"qualifiers"</span>
+            <input type="text"
+                on:input=move |ev| { set_qualifiers(
+                    if !event_target_value(&ev).is_empty() {
+                        Some(event_target_value(&ev))
+                    } else {
+                        None
+                    }
+                ); }
+                prop:value=""
+            />
+            <span class="input-label">"subpath"</span>
+            <input type="text"
+                on:input=move |ev| { set_subpath(
+                    if !event_target_value(&ev).is_empty() {
+                        Some(event_target_value(&ev))
+                    } else {
+                        None
+                    }
+                ); }
+                prop:value=""
+            />
+        </div>
+
         <Purl
             typestr={typestr}
             namespace={namespace}
@@ -62,22 +107,6 @@ fn Purl(
     qualifiers: ReadSignal<Option<String>>,
     subpath: ReadSignal<Option<String>>,
 ) -> impl IntoView {
-    let qualifiers_rendered = move || {
-        qualifiers.get().is_some().then(|| {
-            view! {
-                <span class="purl-sep">?</span>
-                <span class="purl-qualifiers">{qualifiers}</span>
-            }
-        })
-    };
-    let subpath_rendered = move || {
-        subpath.get().is_some().then(|| {
-            view! {
-                <span class="purl-sep">?</span>
-                <span class="purl-subpath">{subpath}</span>
-            }
-        })
-    };
 
     // abtract: scheme:type/namespace/name@version?qualifiers#subpath
     view! {
@@ -91,8 +120,23 @@ fn Purl(
             <span class="purl-name">{name}</span>
             <span class="purl-sep">@</span>
             <span class="purl-version">{version}</span>
-            {qualifiers_rendered()}
-            {subpath_rendered()}
+            { move || {
+                qualifiers.get().is_some().then(|| {
+                    view! {
+                        <span class="purl-sep">?</span>
+                        <span class="purl-qualifiers">{move || qualifiers.get()}</span>
+                    }
+                })
+            }}
+            {move || {
+                subpath.get().is_some().then(|| {
+                    view! {
+                        <span class="purl-sep">#</span>
+                        <span class="purl-subpath">{subpath}</span>
+                    }
+                })
+            }}
+            // {subpath_rendered()}
         </div>
     }
 }
