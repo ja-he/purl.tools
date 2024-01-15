@@ -1,14 +1,13 @@
 use leptos::*;
-use leptos_meta::{provide_meta_context, Title};
 
 #[component]
 fn App() -> impl IntoView {
     let (devstatus_accepted, set_devstatus_accepted) = create_signal(false);
     let (light_theme, set_light_theme) = create_signal(true);
-    provide_meta_context();
+    leptos_meta::provide_meta_context();
 
     view! {
-        <Title text="purl Builder"/>
+        <leptos_meta::Title text="purl Builder"/>
             <div id="full-page">
                 <div id="header">
                     <div  id="main-title">purl Builder</div>
