@@ -222,7 +222,7 @@ fn Purl(
                 if typestr.get().is_empty() {
                     EvalResult::Invalid("type must not be empty".to_string())
                 } else if TYPE_REGEX.is_match(&typestr.get()) {
-                    EvalResult::AtLeastValid("valid idientifer".to_string())
+                    EvalResult::AtLeastValid("valid identifier".to_string())
                 } else {
                     EvalResult::Invalid("does not match regex".to_string())
                 }
