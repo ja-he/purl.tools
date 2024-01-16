@@ -56,7 +56,7 @@ fn MainContent() -> impl IntoView {
     // abtract: scheme:type/namespace/name@version?qualifiers#subpath
     // eg.:     pkg:github/package-url/purl-spec@244fd47e07d1004f0aed9c
     let (typestr, set_typestr) = create_signal("github".to_string());
-    let (namespace, set_namespace) = create_signal("ja-he".to_string());
+    let (namespace, set_namespace) = create_signal(Some("ja-he".to_string()));
     let (name, set_name) = create_signal("dayplan".to_string());
     let (version, set_version) = create_signal(Some("v0.9.4".to_string()));
     let (qualifiers, set_qualifiers) = create_signal(None);
@@ -114,8 +114,14 @@ fn MainContent() -> impl IntoView {
             <div class="input-row">
                 <span class="input-label">"namespace"</span>
                 <input class="purl-component-input" type="text"
-                    on:input=move |ev| { set_namespace(event_target_value(&ev)); }
-                    prop:value=namespace
+                    on:input=move |ev| { set_namespace(
+                        if !event_target_value(&ev).is_empty() {
+                            Some(event_target_value(&ev))
+                        } else {
+                            None
+                        }
+                    ); }
+                    prop:value=namespace().unwrap_or_default()
                 />
             </div>
             <div class="input-row">
@@ -209,7 +215,7 @@ enum EvalResult {
 #[component]
 fn Purl(
     typestr: ReadSignal<String>,
-    namespace: ReadSignal<String>,
+    namespace: ReadSignal<Option<String>>,
     name: ReadSignal<String>,
     version: ReadSignal<Option<String>>,
     qualifiers: ReadSignal<Option<String>>,
@@ -248,14 +254,38 @@ fn Purl(
         }
     };
 
+    let namespace_and_leading_slash = {
+        move || {
+            namespace().is_some().then(|| {
+                view! {
+                    <span class="purl-sep">/</span>
+                    <span class="purl-namespace-full">
+                    {
+                        let parts_count = namespace().unwrap_or_default().split('/').count();
+                        namespace().unwrap_or_default().split('/').enumerate().map(|(index, ns_part)| {
+                            let ns_part = ns_part.to_string();
+                            view! {
+                                <span class="purl-namespace-part">{ns_part}</span>
+                                {
+                                    (index < parts_count-1)
+                                        .then(|| view!{ <span class="purl-sep namespace-inner-sep">"/"</span>})
+                                }
+                            }
+                        }).collect_view()
+                    }
+                    </span>
+                }
+            })
+        }
+    };
+
     // abtract: scheme:type/namespace/name@version?qualifiers#subpath
     view! {
         <div class="purl">
             <span class="purl-scheme">"pkg"</span>
             <span class="purl-sep">:</span>
             <span class=get_purl_type_classes>{typestr}</span>
-            <span class="purl-sep">/</span>
-            <span class="purl-namespace">{namespace}</span>
+            {namespace_and_leading_slash}
             <span class="purl-sep">/</span>
             <span class="purl-name">{name}</span>
             { move || {
