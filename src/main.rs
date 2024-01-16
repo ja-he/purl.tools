@@ -138,16 +138,26 @@ fn Purl(
     qualifiers: ReadSignal<Option<String>>,
     subpath: ReadSignal<Option<String>>,
 ) -> impl IntoView {
+    let get_purl_type_classes = {
+        move || {
+            format!(
+                "{t} {status}",
+                t = "purl-type",
+                status = match purl_data::get_purl_type_status(&typestr.get()) {
+                    purl_data::PurlTypeStatus::WellKnown => "identifier-well-known",
+                    purl_data::PurlTypeStatus::Proposed => "identifier-proposed",
+                    purl_data::PurlTypeStatus::Other => "identifier-other",
+                }
+            )
+        }
+    };
+
     // abtract: scheme:type/namespace/name@version?qualifiers#subpath
     view! {
         <div class="purl">
             <span class="purl-scheme">"pkg"</span>
             <span class="purl-sep">:</span>
-            <span class={ move || format!("{t} {status}", t="purl-type", status=match purl_data::get_purl_type_status(&typestr.get()) {
-                purl_data::PurlTypeStatus::WellKnown => "identifier-well-known",
-                purl_data::PurlTypeStatus::Proposed => "identifier-proposed",
-                purl_data::PurlTypeStatus::Other => "identifier-other",
-            })}>{typestr}</span>
+            <span class=get_purl_type_classes>{typestr}</span>
             <span class="purl-sep">/</span>
             <span class="purl-namespace">{namespace}</span>
             <span class="purl-sep">/</span>
