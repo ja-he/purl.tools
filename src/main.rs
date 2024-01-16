@@ -194,7 +194,7 @@ pub fn PurlTypeOption(
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum EvalResult {
-    Good(String),
+    Verified(String),
     ProbablyOk(String),
     AtLeastValid(String),
     Invalid(String),
@@ -235,7 +235,7 @@ fn Purl(
                 "{t} {status}",
                 t = "purl-type",
                 status = match eval_type() {
-                    EvalResult::Good(_) => "identifier-good",
+                    EvalResult::Verified(_) => "identifier-verified",
                     EvalResult::ProbablyOk(_) => "identifier-ok",
                     EvalResult::AtLeastValid(_) => "identifier-unknown",
                     EvalResult::Invalid(_) => "identifier-invalid",
@@ -276,7 +276,7 @@ fn Purl(
         </div>
         { move || {
             let (class, headline, message) = match eval_type() {
-                EvalResult::Good(s) => ("good", "good", s),
+                EvalResult::Verified(s) => ("verified", "verified", s),
                 EvalResult::ProbablyOk(s) => ("ok", "ok", s),
                 EvalResult::AtLeastValid(s) => ("valid", "valid", s),
                 EvalResult::Invalid(s) => ("invalid", "invalid", s),
