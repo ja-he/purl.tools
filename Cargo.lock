@@ -1108,8 +1108,10 @@ dependencies = [
 name = "purl-builder"
 version = "0.1.0"
 dependencies = [
+ "lazy_static",
  "leptos",
  "leptos_meta",
+ "regex",
 ]
 
 [[package]]

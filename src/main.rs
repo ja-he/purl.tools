@@ -2,6 +2,15 @@ use leptos::*;
 
 mod purl_data;
 
+// const TYPE_REGEX: regex::Regex = regex::Regex::new(r"^[a-zA-Z\.\+\-][a-zA-Z0-9\.\+\-]*$").unwrap();
+
+#[macro_use]
+extern crate lazy_static;
+
+lazy_static!{
+    static ref TYPE_REGEX: regex::Regex = regex::Regex::new(r"^[a-zA-Z\.\+\-][a-zA-Z0-9\.\+\-]*$").unwrap();
+}
+
 #[component]
 fn App() -> impl IntoView {
     let (light_theme, set_light_theme) = create_signal(true);
@@ -197,7 +206,13 @@ fn Purl(
                 status = match purl_data::get_purl_type_status(&typestr.get()) {
                     purl_data::PurlTypeStatus::WellKnown => "identifier-well-known",
                     purl_data::PurlTypeStatus::Proposed => "identifier-proposed",
-                    purl_data::PurlTypeStatus::Other => "identifier-other",
+                    purl_data::PurlTypeStatus::Other => {
+                        if TYPE_REGEX.is_match(&typestr.get()) {
+                            "identifier-other"
+                        } else {
+                            "identifier-regex-fail"
+                        }
+                    },
                 }
             )
         }
