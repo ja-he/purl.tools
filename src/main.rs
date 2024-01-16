@@ -210,7 +210,6 @@ fn Purl(
     subpath: ReadSignal<Option<String>>,
 ) -> impl IntoView {
     let eval_type = move || {
-        log::debug!("eval {}", typestr());
         match purl_data::get_purl_type_status(&typestr()) {
             purl_data::PurlTypeStatus::WellKnown => {
                 EvalResult::Good("well-known identifier".to_string())
