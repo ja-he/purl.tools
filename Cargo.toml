@@ -10,7 +10,10 @@ keywords = ["purl", "leptos", "web-app"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+console_error_panic_hook = "0.1.7"
+console_log = "1.0.0"
 lazy_static = "1.4.0"
 leptos = { version = "0.5.4", features = ["csr", "nightly"] }
 leptos_meta = { version = "0.5.4", features = ["csr"] }
+log = "0.4.20"
 regex = "1.10.2"
