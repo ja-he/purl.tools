@@ -62,7 +62,7 @@ fn MainContent() -> impl IntoView {
                     {
                         purl_data::PURL_TYPES.iter()
                             .map(|(type_option, choice_status)| view! {
-                                <PurlTypeOption typestr is=type_option status=*choice_status/>
+                                <PurlTypeOption typestr=typestr is=type_option status=*choice_status/>
                             })
                             .collect_view()
                      }
@@ -161,8 +161,8 @@ fn MainContent() -> impl IntoView {
 
 #[component]
 pub fn PurlTypeOption(
-    is: &'static str,
     typestr: ReadSignal<String>,
+    is: &'static str,
     status: purl_data::PurlTypeStatus,
 ) -> impl IntoView {
     view! {
