@@ -7,8 +7,9 @@ mod purl_data;
 #[macro_use]
 extern crate lazy_static;
 
-lazy_static!{
-    static ref TYPE_REGEX: regex::Regex = regex::Regex::new(r"^[a-zA-Z\.\+\-][a-zA-Z0-9\.\+\-]*$").unwrap();
+lazy_static! {
+    static ref TYPE_REGEX: regex::Regex =
+        regex::Regex::new(r"^[a-zA-Z\.\+\-][a-zA-Z0-9\.\+\-]*$").unwrap();
 }
 
 #[component]
@@ -62,7 +63,8 @@ fn MainContent() -> impl IntoView {
     let (subpath, set_subpath) = create_signal(None);
 
     let (type_input_option, set_type_input_option) = create_signal(InputOption::Select);
-    let get_type_input_field = move || match type_input_option.get() {
+    let get_type_input_field = move || {
+        match type_input_option.get() {
         InputOption::Select => view! {
                 <select class="purl-component-input" on:change=move |ev| {
                     let new_value = event_target_value(&ev);
@@ -85,6 +87,7 @@ fn MainContent() -> impl IntoView {
                 />
         }
         .into_any(),
+    }
     };
 
     let cycle_type_input_option = move |_| {
@@ -189,6 +192,14 @@ pub fn PurlTypeOption(
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum EvalResult {
+    Good(String),
+    ProbablyOk(String),
+    AtLeastValid(String),
+    Invalid(String),
+}
+
 #[component]
 fn Purl(
     typestr: ReadSignal<String>,
@@ -198,23 +209,37 @@ fn Purl(
     qualifiers: ReadSignal<Option<String>>,
     subpath: ReadSignal<Option<String>>,
 ) -> impl IntoView {
+    let eval_type = move || {
+        log::debug!("eval {}", typestr());
+        match purl_data::get_purl_type_status(&typestr()) {
+            purl_data::PurlTypeStatus::WellKnown => {
+                EvalResult::Good("well-known identifier".to_string())
+            }
+            purl_data::PurlTypeStatus::Proposed => {
+                EvalResult::ProbablyOk("officially proposed identifier".to_string())
+            }
+            purl_data::PurlTypeStatus::Other => {
+                if typestr.get().is_empty() {
+                    EvalResult::Invalid("type must not be empty".to_string())
+                } else if TYPE_REGEX.is_match(&typestr.get()) {
+                    EvalResult::AtLeastValid("valid idientifer".to_string())
+                } else {
+                    EvalResult::Invalid("does not match regex".to_string())
+                }
+            }
+        }
+    };
+
     let get_purl_type_classes = {
         move || {
             format!(
                 "{t} {status}",
                 t = "purl-type",
-                status = match purl_data::get_purl_type_status(&typestr.get()) {
-                    purl_data::PurlTypeStatus::WellKnown => "identifier-well-known",
-                    purl_data::PurlTypeStatus::Proposed => "identifier-proposed",
-                    purl_data::PurlTypeStatus::Other => {
-                        if typestr.get().is_empty() {
-                            "identifier-empty-fail"
-                        } else if TYPE_REGEX.is_match(&typestr.get()) {
-                            "identifier-other"
-                        } else {
-                            "identifier-regex-fail"
-                        }
-                    },
+                status = match eval_type() {
+                    EvalResult::Good(_) => "identifier-good",
+                    EvalResult::ProbablyOk(_) => "identifier-ok",
+                    EvalResult::AtLeastValid(_) => "identifier-unknown",
+                    EvalResult::Invalid(_) => "identifier-invalid",
                 }
             )
         }
@@ -250,6 +275,20 @@ fn Purl(
             }}
             // {subpath_rendered()}
         </div>
+        { move || {
+            let (class, headline, message) = match eval_type() {
+                EvalResult::Good(s) => ("good", "good", s),
+                EvalResult::ProbablyOk(s) => ("ok", "ok", s),
+                EvalResult::AtLeastValid(s) => ("valid", "valid", s),
+                EvalResult::Invalid(s) => ("invalid", "invalid", s),
+            };
+            view !{
+                <div class=format!("explanation-box {class}")>
+                    <span class="headline">{headline}</span>
+                    <span class="explanation">{message}</span>
+                </div>
+            }
+        }}
     }
 }
 

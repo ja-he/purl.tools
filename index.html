@@ -145,26 +145,38 @@
     font-size: 2em;
   }
 
-  .identifier-well-known {
+  .identifier-good {
     text-decoration: underline #007700 0.2em;
     background-color: #bbffbb;
   }
-  .identifier-proposed {
+  .identifier-ok {
     text-decoration: underline #002266 0.2em;
     background-color: #aaddff;
   }
-  .identifier-other {
+  .identifier-unknown {
     text-decoration: underline #777700 0.2em;
     background-color: #ffffbb;
   }
-  .identifier-regex-fail {
+  .identifier-invalid {
     text-decoration: underline #770000 0.2em;
     background-color: #ffbbbb;
   }
-  .identifier-empty-fail {
-    text-decoration: underline #770000 0.2em;
-    background-color: #ffbbbb;
+  .explanation-box {
+    padding: 1em;
+    border-radius: 0.5em;
   }
+  .explanation-box.good      { background-color: #bbffbb; display: none; }
+  .explanation-box.ok        { background-color: #aaddff; }
+  .explanation-box.valid     { background-color: #ffffbb; }
+  .explanation-box.invalid   { background-color: #ffbbbb; }
+  .headline {
+    font-weight: bold;
+    margin: 1em;
+  }
+  .explanation {
+    margin: 1em;
+  }
+
   </style>
 
 </head>
