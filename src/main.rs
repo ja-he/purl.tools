@@ -11,7 +11,10 @@ fn App() -> impl IntoView {
         <leptos_meta::Title text="purl Builder"/>
             <div id="full-page">
                 <div id="header">
-                    <div  id="main-title">purl Builder</div>
+                    <div  id="main-title">
+                        <span id="title-text">"purl Builder"</span>
+                        <span id="wip-disclaimer">"under construction"</span>
+                    </div>
                     <div id="theme-toggle">
                         <button id="theme-toggle-button" on:click=move |_| { set_light_theme.update(|prev| { *prev = !*prev }) }>
                             <Show when=move || light_theme.get() fallback=move || view! { "go dark" }>"go light"</Show>

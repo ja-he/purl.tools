@@ -47,7 +47,30 @@
     font-size: 2em;
     font-weight: bold;
   }
-  
+  #title-text {
+  }
+  #wip-disclaimer {
+    position: absolute;
+    font-size: 16pt;
+    text-align: center;
+    width: max-content;
+    top: 0;
+    left: 50%;
+    background-color: #ffaaaa;
+    color: #440000;
+    /* transform: rotate(-15deg); */
+    animation: wiggle 2.5s linear infinite;
+    user-select: none;
+  }
+
+  @keyframes wiggle {
+    0%   { transform: translate(-50%, +90%) rotate(0);      }
+    25%  { transform: translate(-50%, +90%) rotate(-15deg); }
+    50%  { transform: translate(-50%, +90%) rotate(0);      }
+    75%  { transform: translate(-50%, +90%) rotate(+15deg); }
+    100% { transform: translate(-50%, +90%) rotate(0);      }
+  }
+
   #theme-toggle {
     grid-area: right;
   }
