@@ -207,7 +207,9 @@ fn Purl(
                     purl_data::PurlTypeStatus::WellKnown => "identifier-well-known",
                     purl_data::PurlTypeStatus::Proposed => "identifier-proposed",
                     purl_data::PurlTypeStatus::Other => {
-                        if TYPE_REGEX.is_match(&typestr.get()) {
+                        if typestr.get().is_empty() {
+                            "identifier-empty-fail"
+                        } else if TYPE_REGEX.is_match(&typestr.get()) {
                             "identifier-other"
                         } else {
                             "identifier-regex-fail"
