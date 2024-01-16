@@ -45,56 +45,68 @@ fn MainContent() -> impl IntoView {
 
     view! {
         <div id="input-form">
-            <span class="input-label">"type"</span>
-            <select on:change=move |ev| {
-                let new_value = event_target_value(&ev);
-                set_typestr(new_value);
-            }>
-                {
-                    purl_data::PURL_TYPES.iter()
-                        .map(|(type_option, choice_status)| view! {
-                            <PurlTypeOption typestr is=type_option status=*choice_status/>
-                        })
-                        .collect_view()
-                 }
-            </select>
-            <span class="input-label">"namespace"</span>
-            <input type="text"
-                on:input=move |ev| { set_namespace(event_target_value(&ev)); }
-                prop:value=namespace
-            />
-            <span class="input-label">"name"</span>
-            <input type="text"
-                on:input=move |ev| { set_name(event_target_value(&ev)); }
-                prop:value=name
-            />
-            <span class="input-label">"version"</span>
-            <input type="text"
-                on:input=move |ev| { set_version(event_target_value(&ev)); }
-                prop:value=version
-            />
-            <span class="input-label">"qualifiers"</span>
-            <input type="text"
-                on:input=move |ev| { set_qualifiers(
-                    if !event_target_value(&ev).is_empty() {
-                        Some(event_target_value(&ev))
-                    } else {
-                        None
-                    }
-                ); }
-                prop:value=""
-            />
-            <span class="input-label">"subpath"</span>
-            <input type="text"
-                on:input=move |ev| { set_subpath(
-                    if !event_target_value(&ev).is_empty() {
-                        Some(event_target_value(&ev))
-                    } else {
-                        None
-                    }
-                ); }
-                prop:value=""
-            />
+            <div class="input-row">
+                <span class="input-label">"type"</span>
+                <select class="purl-component-input" on:change=move |ev| {
+                    let new_value = event_target_value(&ev);
+                    set_typestr(new_value);
+                }>
+                    {
+                        purl_data::PURL_TYPES.iter()
+                            .map(|(type_option, choice_status)| view! {
+                                <PurlTypeOption typestr is=type_option status=*choice_status/>
+                            })
+                            .collect_view()
+                     }
+                </select>
+            </div>
+            <div class="input-row">
+                <span class="input-label">"namespace"</span>
+                <input class="purl-component-input" type="text"
+                    on:input=move |ev| { set_namespace(event_target_value(&ev)); }
+                    prop:value=namespace
+                />
+            </div>
+            <div class="input-row">
+                <span class="input-label">"name"</span>
+                <input class="purl-component-input" type="text"
+                    on:input=move |ev| { set_name(event_target_value(&ev)); }
+                    prop:value=name
+                />
+            </div>
+            <div class="input-row">
+                <span class="input-label">"version"</span>
+                <input class="purl-component-input" type="text"
+                    on:input=move |ev| { set_version(event_target_value(&ev)); }
+                    prop:value=version
+                />
+            </div>
+            <div class="input-row">
+                <span class="input-label">"qualifiers"</span>
+                <input class="purl-component-input" type="text"
+                    on:input=move |ev| { set_qualifiers(
+                        if !event_target_value(&ev).is_empty() {
+                            Some(event_target_value(&ev))
+                        } else {
+                            None
+                        }
+                    ); }
+                    prop:value=""
+                />
+            </div>
+            <div class="input-row">
+                <span class="input-label">"subpath"</span>
+                <input class="purl-component-input" type="text"
+                    on:input=move |ev| { set_subpath(
+                        if !event_target_value(&ev).is_empty() {
+                            Some(event_target_value(&ev))
+                        } else {
+                            None
+                        }
+                    ); }
+                    prop:value=""
+                />
+            </div>
         </div>
 
         <Purl

@@ -71,7 +71,7 @@
     background-color: #00000011;
     padding: 1em;
     border-radius: 0.5em;
-    margin: auto;
+    margin: 1em auto;
   }
 
   .purl-scheme {
@@ -85,10 +85,33 @@
   }
 
   #input-form {
-    margin: auto;
-    display: grid;
-    grid-template-columns: 1fr 2fr;
+    margin: 0.5em auto;
+    display: flex;
+    flex-flow: column;
+    gap: 0.25em;
     max-width: 16em;
+  }
+
+  input {
+    box-sizing: border-box;
+  }
+  .input-row {
+    width: 100%;
+    display: grid;
+    gap: 0.5em;
+    grid-template-columns: 6em 1fr 1em;
+    grid-template-areas: "label input options";
+  }
+
+  .input-row > .input-label {
+    grid-area: label;
+  }
+  .input-row > .purl-component-input {
+    width: 100%;
+    grid-area: input;
+  }
+  .input-row > .purl-input-options-button {
+    grid-area: options;
   }
 
   .option-proposed {
