@@ -52,8 +52,8 @@ fn MainContent() -> impl IntoView {
             }>
                 {
                     purl_data::PURL_TYPES.iter()
-                        .map(|(type_option, choice_well_known)| view! {
-                            <PurlTypeOption typestr is=type_option well_known=*choice_well_known/>
+                        .map(|(type_option, choice_status)| view! {
+                            <PurlTypeOption typestr is=type_option status=*choice_status/>
                         })
                         .collect_view()
                  }
@@ -112,14 +112,14 @@ fn MainContent() -> impl IntoView {
 pub fn PurlTypeOption(
     is: &'static str,
     typestr: ReadSignal<String>,
-    well_known: bool,
+    status: purl_data::PurlTypeStatus,
 ) -> impl IntoView {
     view! {
         <option
-            class={ if well_known {
-                "well-known-type"
-            } else {
-                "proposed-type"
+            class={ match status {
+                purl_data::PurlTypeStatus::WellKnown => "option-well-known",
+                purl_data::PurlTypeStatus::Proposed => "option-proposed",
+                purl_data::PurlTypeStatus::Other => "option-other", // this case would not happen, normally
             }}
             value=is
             selected=move || typestr() == is
@@ -143,7 +143,11 @@ fn Purl(
         <div class="purl">
             <span class="purl-scheme">"pkg"</span>
             <span class="purl-sep">:</span>
-            <span class="purl-type">{typestr}</span>
+            <span class={ move || format!("{t} {status}", t="purl-type", status=match purl_data::get_purl_type_status(&typestr.get()) {
+                purl_data::PurlTypeStatus::WellKnown => "identifier-well-known",
+                purl_data::PurlTypeStatus::Proposed => "identifier-proposed",
+                purl_data::PurlTypeStatus::Other => "identifier-other",
+            })}>{typestr}</span>
             <span class="purl-sep">/</span>
             <span class="purl-namespace">{namespace}</span>
             <span class="purl-sep">/</span>
