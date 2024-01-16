@@ -215,22 +215,20 @@ fn Purl(
     qualifiers: ReadSignal<Option<String>>,
     subpath: ReadSignal<Option<String>>,
 ) -> impl IntoView {
-    let eval_type = move || {
-        match purl_data::get_purl_type_status(&typestr()) {
-            purl_data::PurlTypeStatus::WellKnown => {
-                EvalResult::Verified("well-known identifier".to_string())
-            }
-            purl_data::PurlTypeStatus::Proposed => {
-                EvalResult::ProbablyOk("officially proposed identifier".to_string())
-            }
-            purl_data::PurlTypeStatus::Other => {
-                if typestr.get().is_empty() {
-                    EvalResult::Invalid("type must not be empty".to_string())
-                } else if TYPE_REGEX.is_match(&typestr.get()) {
-                    EvalResult::AtLeastValid("valid identifier".to_string())
-                } else {
-                    EvalResult::Invalid("does not match regex".to_string())
-                }
+    let eval_type = move || match purl_data::get_purl_type_status(&typestr()) {
+        purl_data::PurlTypeStatus::WellKnown => {
+            EvalResult::Verified("well-known identifier".to_string())
+        }
+        purl_data::PurlTypeStatus::Proposed => {
+            EvalResult::ProbablyOk("officially proposed identifier".to_string())
+        }
+        purl_data::PurlTypeStatus::Other => {
+            if typestr.get().is_empty() {
+                EvalResult::Invalid("type must not be empty".to_string())
+            } else if TYPE_REGEX.is_match(&typestr.get()) {
+                EvalResult::AtLeastValid("valid identifier".to_string())
+            } else {
+                EvalResult::Invalid("does not match regex".to_string())
             }
         }
     };
