@@ -32,6 +32,12 @@ fn App() -> impl IntoView {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum InputOption {
+    Select,
+    Raw,
+}
+
 #[component]
 fn MainContent() -> impl IntoView {
     // abtract: scheme:type/namespace/name@version?qualifiers#subpath
@@ -43,10 +49,9 @@ fn MainContent() -> impl IntoView {
     let (qualifiers, set_qualifiers) = create_signal(None);
     let (subpath, set_subpath) = create_signal(None);
 
-    view! {
-        <div id="input-form">
-            <div class="input-row">
-                <span class="input-label">"type"</span>
+    let (type_input_option, set_type_input_option) = create_signal(InputOption::Select);
+    let get_type_input_field = move || match type_input_option.get() {
+        InputOption::Select => view! {
                 <select class="purl-component-input" on:change=move |ev| {
                     let new_value = event_target_value(&ev);
                     set_typestr(new_value);
@@ -59,6 +64,37 @@ fn MainContent() -> impl IntoView {
                             .collect_view()
                      }
                 </select>
+        }
+        .into_any(),
+        InputOption::Raw => view! {
+                <input class="purl-component-input" type="text"
+                    on:input=move |ev| { set_typestr(event_target_value(&ev)); }
+                    prop:value=typestr
+                />
+        }
+        .into_any(),
+    };
+
+    let cycle_type_input_option = move |_| {
+        set_type_input_option.update(|prev| {
+            *prev = match *prev {
+                InputOption::Select => InputOption::Raw,
+                InputOption::Raw => InputOption::Select,
+            }
+        })
+    };
+
+    view! {
+        <div id="input-form">
+            <div class="input-row">
+                <span class="input-label">"type"</span>
+                {get_type_input_field}
+                <button
+                    id="type-input-toggle-button"
+                    class="purl-input-options-button"
+                    on:click=cycle_type_input_option>
+                    "switch input"
+                </button>
             </div>
             <div class="input-row">
                 <span class="input-label">"namespace"</span>
