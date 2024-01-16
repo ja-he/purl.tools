@@ -58,7 +58,7 @@ fn MainContent() -> impl IntoView {
     let (typestr, set_typestr) = create_signal("github".to_string());
     let (namespace, set_namespace) = create_signal("ja-he".to_string());
     let (name, set_name) = create_signal("dayplan".to_string());
-    let (version, set_version) = create_signal("v0.9.4".to_string());
+    let (version, set_version) = create_signal(Some("v0.9.4".to_string()));
     let (qualifiers, set_qualifiers) = create_signal(None);
     let (subpath, set_subpath) = create_signal(None);
 
@@ -128,8 +128,14 @@ fn MainContent() -> impl IntoView {
             <div class="input-row">
                 <span class="input-label">"version"</span>
                 <input class="purl-component-input" type="text"
-                    on:input=move |ev| { set_version(event_target_value(&ev)); }
-                    prop:value=version
+                    on:input=move |ev| { set_version(
+                        if !event_target_value(&ev).is_empty() {
+                            Some(event_target_value(&ev))
+                        } else {
+                            None
+                        }
+                    ); }
+                    prop:value=version().unwrap_or_default()
                 />
             </div>
             <div class="input-row">
@@ -142,7 +148,7 @@ fn MainContent() -> impl IntoView {
                             None
                         }
                     ); }
-                    prop:value=""
+                    prop:value=qualifiers().unwrap_or_default()
                 />
             </div>
             <div class="input-row">
@@ -155,7 +161,7 @@ fn MainContent() -> impl IntoView {
                             None
                         }
                     ); }
-                    prop:value=""
+                    prop:value=subpath().unwrap_or_default()
                 />
             </div>
         </div>
@@ -205,14 +211,14 @@ fn Purl(
     typestr: ReadSignal<String>,
     namespace: ReadSignal<String>,
     name: ReadSignal<String>,
-    version: ReadSignal<String>,
+    version: ReadSignal<Option<String>>,
     qualifiers: ReadSignal<Option<String>>,
     subpath: ReadSignal<Option<String>>,
 ) -> impl IntoView {
     let eval_type = move || {
         match purl_data::get_purl_type_status(&typestr()) {
             purl_data::PurlTypeStatus::WellKnown => {
-                EvalResult::Good("well-known identifier".to_string())
+                EvalResult::Verified("well-known identifier".to_string())
             }
             purl_data::PurlTypeStatus::Proposed => {
                 EvalResult::ProbablyOk("officially proposed identifier".to_string())
@@ -254,8 +260,14 @@ fn Purl(
             <span class="purl-namespace">{namespace}</span>
             <span class="purl-sep">/</span>
             <span class="purl-name">{name}</span>
-            <span class="purl-sep">@</span>
-            <span class="purl-version">{version}</span>
+            { move || {
+                version.get().is_some().then(|| {
+                    view! {
+                        <span class="purl-sep">@</span>
+                        <span class="purl-version">{version}</span>
+                    }
+                })
+            }}
             { move || {
                 qualifiers.get().is_some().then(|| {
                     view! {
