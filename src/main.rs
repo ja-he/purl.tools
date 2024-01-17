@@ -212,6 +212,39 @@ enum EvalResult {
     Invalid(String),
 }
 
+impl EvalResult {
+    fn summary(&self) -> String {
+        match self {
+            EvalResult::Verified(_) => "verified".to_string(),
+            EvalResult::ProbablyOk(_) => "ok".to_string(),
+            EvalResult::AtLeastValid(_) => "valid".to_string(),
+            EvalResult::Invalid(_) => "invalid".to_string(),
+        }
+    }
+    fn explanation(&self) -> String {
+        match self {
+            EvalResult::Verified(s)
+            | EvalResult::ProbablyOk(s)
+            | EvalResult::AtLeastValid(s)
+            | EvalResult::Invalid(s) => s.clone(),
+        }
+    }
+}
+
+#[component]
+fn EvalIcon(eval_result: ReadSignal<EvalResult>) -> impl IntoView {
+    view! {
+        {
+            match eval_result() {
+                EvalResult::Verified(_)     => view!{<phosphor_leptos::Checks class="explanation-icon verified" weight=phosphor_leptos::IconWeight::Bold />},
+                EvalResult::ProbablyOk(_)   => view!{<phosphor_leptos::Check class="explanation-icon ok" weight=phosphor_leptos::IconWeight::Bold />}       ,
+                EvalResult::AtLeastValid(_) => view!{<phosphor_leptos::Question class="explanation-icon valid" weight=phosphor_leptos::IconWeight::Bold />} ,
+                EvalResult::Invalid(_)      => view!{<phosphor_leptos::Warning class="explanation-icon invalid" weight=phosphor_leptos::IconWeight::Bold />},
+            }
+        }
+    }
+}
+
 #[component]
 fn Purl(
     typestr: ReadSignal<String>,
@@ -221,38 +254,48 @@ fn Purl(
     qualifiers: ReadSignal<Option<String>>,
     subpath: ReadSignal<Option<String>>,
 ) -> impl IntoView {
-    let eval_type = move || match purl_data::get_purl_type_status(&typestr()) {
-        purl_data::PurlTypeStatus::WellKnown => {
-            EvalResult::Verified("well-known identifier".to_string())
-        }
-        purl_data::PurlTypeStatus::Proposed => {
-            EvalResult::ProbablyOk("officially proposed identifier".to_string())
-        }
-        purl_data::PurlTypeStatus::Other => {
-            if typestr.get().is_empty() {
-                EvalResult::Invalid("type must not be empty".to_string())
-            } else if TYPE_REGEX.is_match(&typestr.get()) {
-                EvalResult::AtLeastValid("valid identifier".to_string())
-            } else {
-                EvalResult::Invalid("does not match regex".to_string())
+    let eval_type = move || {
+        let s = typestr();
+        log::debug!("evalling {s}");
+        match purl_data::get_purl_type_status(&s) {
+            purl_data::PurlTypeStatus::WellKnown => {
+                EvalResult::Verified("well-known identifier".to_string())
+            }
+            purl_data::PurlTypeStatus::Proposed => {
+                EvalResult::ProbablyOk("officially proposed identifier".to_string())
+            }
+            purl_data::PurlTypeStatus::Other => {
+                if typestr.get().is_empty() {
+                    EvalResult::Invalid("type must not be empty".to_string())
+                } else if TYPE_REGEX.is_match(&typestr.get()) {
+                    EvalResult::AtLeastValid("valid identifier".to_string())
+                } else {
+                    EvalResult::Invalid("does not match regex".to_string())
+                }
             }
         }
     };
 
-    let get_purl_type_classes = {
-        move || {
-            format!(
-                "{t} {status}",
-                t = "purl-type",
-                status = match eval_type() {
-                    EvalResult::Verified(_) => "identifier-verified",
-                    EvalResult::ProbablyOk(_) => "identifier-ok",
-                    EvalResult::AtLeastValid(_) => "identifier-valid",
-                    EvalResult::Invalid(_) => "identifier-invalid",
-                }
-            )
+    let (eval_type_result, set_eval_type_result) = create_signal("verified".to_string());
+    let (eval_type_result_explanation, set_eval_type_result_explanation) = create_signal("well-known identifier".to_string());
+
+    create_effect(move |_| {
+        let new = eval_type().summary();
+        let old = eval_type_result();
+        if old != new {
+            set_eval_type_result(new);
         }
-    };
+        let new = eval_type().explanation();
+        let old = eval_type_result_explanation();
+        if old != new {
+            set_eval_type_result_explanation(new);
+        }
+    });
+
+    let get_purl_type_classes =
+        move || format!("purl-type identifier-{result}", result = eval_type_result());
+    let get_explanation_box_class =
+        move || format!("explanation-box {result}", result = eval_type_result());
 
     let namespace_and_leading_slash = {
         move || {
@@ -314,21 +357,32 @@ fn Purl(
             }}
             // {subpath_rendered()}
         </div>
-        { move || {
-            let (class, icon, headline, message) = match eval_type() {
-                EvalResult::Verified(s) => ("verified", view!{<phosphor_leptos::Checks class="explanation-icon verified" weight=phosphor_leptos::IconWeight::Bold />}, "verified", s),
-                EvalResult::ProbablyOk(s) => ("ok", view!{<phosphor_leptos::Check class="explanation-icon ok" weight=phosphor_leptos::IconWeight::Bold />}, "ok", s),
-                EvalResult::AtLeastValid(s) => ("valid", view!{<phosphor_leptos::Question class="explanation-icon valid" weight=phosphor_leptos::IconWeight::Bold />}, "valid", s),
-                EvalResult::Invalid(s) => ("invalid", view!{<phosphor_leptos::Warning class="explanation-icon invalid" weight=phosphor_leptos::IconWeight::Bold />}, "invalid", s),
-            };
-            view !{
-                <div class=format!("explanation-box {class}")>
-                    {icon}
-                    <span class="headline">{headline}</span>
-                    <span class="explanation">{message}</span>
-                </div>
-            }
-        }}
+        <div class={get_explanation_box_class}>
+            {move || match eval_type_result().as_str() {
+                "verified" => view!{<phosphor_leptos::Checks class="explanation-icon verified" weight=phosphor_leptos::IconWeight::Bold />},
+                "ok" => view!{<phosphor_leptos::Check class="explanation-icon ok" weight=phosphor_leptos::IconWeight::Bold />}       ,
+                "valid" => view!{<phosphor_leptos::Question class="explanation-icon valid" weight=phosphor_leptos::IconWeight::Bold />} ,
+                "invalid" => view!{<phosphor_leptos::Warning class="explanation-icon invalid" weight=phosphor_leptos::IconWeight::Bold />},
+                _ => view!{<phosphor_leptos::Warning class="explanation-icon error" weight=phosphor_leptos::IconWeight::Duotone />},
+            }}
+            <span class="headline">{eval_type_result}</span>
+            <span class="explanation">{eval_type_result_explanation}</span>
+        </div>
+        // { move || {
+        //     let (class, icon, headline, message) = match eval_type() {
+        //         EvalResult::Verified(s) => ("verified" , view!{<phosphor_leptos::Checks class="explanation-icon verified" weight=phosphor_leptos::IconWeight::Bold />}, "verified", s),
+        //         EvalResult::ProbablyOk(s) => ("ok"     , view!{<phosphor_leptos::Check class="explanation-icon ok" weight=phosphor_leptos::IconWeight::Bold />}       , "ok"      , s),
+        //         EvalResult::AtLeastValid(s) => ("valid", view!{<phosphor_leptos::Question class="explanation-icon valid" weight=phosphor_leptos::IconWeight::Bold />} , "valid"   , s),
+        //         EvalResult::Invalid(s) => ("invalid"   , view!{<phosphor_leptos::Warning class="explanation-icon invalid" weight=phosphor_leptos::IconWeight::Bold />}, "invalid" , s),
+        //     };
+        //     view !{
+        //         <div class=format!("explanation-box {class}")>
+        //             {icon}
+        //             <span class="headline">{headline}</span>
+        //             <span class="explanation">{message}</span>
+        //         </div>
+        //     }
+        // }}
     }
 }
 
