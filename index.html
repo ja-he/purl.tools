@@ -187,7 +187,7 @@
     text-decoration: underline #002266 0.2em;
     background-color: #aaddff;
   }
-  .identifier-unknown {
+  .identifier-valid {
     text-decoration: underline #777700 0.2em;
     background-color: #ffffbb;
   }
@@ -195,10 +195,20 @@
     text-decoration: underline #770000 0.2em;
     background-color: #ffbbbb;
   }
+  .explanation-icon.verified { color: #007700; }
+  .explanation-icon.ok       { color: #002266; }
+  .explanation-icon.valid    { color: #777700; }
+  .explanation-icon.invalid  { color: #770000; }
   .explanation-box {
     padding: 1em;
     border-radius: 0.5em;
     align-self: start;
+    display: grid;
+    column-gap: 0.5em;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: 1em 1fr;
+    grid-template-areas: "icon headline"
+                         "icon explanation"
   }
   .explanation-box.verified  { background-color: #bbffbb; }
   .explanation-box.ok        { background-color: #aaddff; }
@@ -206,12 +216,25 @@
   .explanation-box.invalid   { background-color: #ffbbbb; }
   .headline {
     font-weight: bold;
-    margin: 1em;
+    grid-area: headline;
   }
   .explanation {
-    margin: 1em;
+    grid-area: explanation;
   }
-
+  .explanation-icon {
+    width: 2em;
+    height: 2em;
+    grid-area: icon;
+    align-self: center;
+    justify-self: center;
+    /* animation: animate-pop 0.5s ease-out;*/
+  }
+  /*
+  @keyframes animate-pop {
+    0%   { opacity: 0.0; transform: scale(0.5, 0.5); }
+    100% { opacity: 1.0; transform: scale(1.0, 1.0); }
+  }
+  */
   </style>
 
 </head>

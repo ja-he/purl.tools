@@ -16,4 +16,5 @@ lazy_static = "1.4.0"
 leptos = { version = "0.5.4", features = ["csr", "nightly"] }
 leptos_meta = { version = "0.5.4", features = ["csr"] }
 log = "0.4.20"
+phosphor-leptos = "0.2.1"
 regex = "1.10.2"

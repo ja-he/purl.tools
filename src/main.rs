@@ -247,7 +247,7 @@ fn Purl(
                 status = match eval_type() {
                     EvalResult::Verified(_) => "identifier-verified",
                     EvalResult::ProbablyOk(_) => "identifier-ok",
-                    EvalResult::AtLeastValid(_) => "identifier-unknown",
+                    EvalResult::AtLeastValid(_) => "identifier-valid",
                     EvalResult::Invalid(_) => "identifier-invalid",
                 }
             )
@@ -315,14 +315,15 @@ fn Purl(
             // {subpath_rendered()}
         </div>
         { move || {
-            let (class, headline, message) = match eval_type() {
-                EvalResult::Verified(s) => ("verified", "verified", s),
-                EvalResult::ProbablyOk(s) => ("ok", "ok", s),
-                EvalResult::AtLeastValid(s) => ("valid", "valid", s),
-                EvalResult::Invalid(s) => ("invalid", "invalid", s),
+            let (class, icon, headline, message) = match eval_type() {
+                EvalResult::Verified(s) => ("verified", view!{<phosphor_leptos::Checks class="explanation-icon verified" weight=phosphor_leptos::IconWeight::Bold />}, "verified", s),
+                EvalResult::ProbablyOk(s) => ("ok", view!{<phosphor_leptos::Check class="explanation-icon ok" weight=phosphor_leptos::IconWeight::Bold />}, "ok", s),
+                EvalResult::AtLeastValid(s) => ("valid", view!{<phosphor_leptos::Question class="explanation-icon valid" weight=phosphor_leptos::IconWeight::Bold />}, "valid", s),
+                EvalResult::Invalid(s) => ("invalid", view!{<phosphor_leptos::Warning class="explanation-icon invalid" weight=phosphor_leptos::IconWeight::Bold />}, "invalid", s),
             };
             view !{
                 <div class=format!("explanation-box {class}")>
+                    {icon}
                     <span class="headline">{headline}</span>
                     <span class="explanation">{message}</span>
                 </div>
