@@ -165,7 +165,7 @@ fn MainContent() -> impl IntoView {
                             None
                         }
                     ); }
-                    prop:value=version().unwrap_or_default()
+                    prop:value={move || version().unwrap_or_default()}
                 />
             </div>
             <div class="input-row">
@@ -178,7 +178,7 @@ fn MainContent() -> impl IntoView {
                             None
                         }
                     ); }
-                    prop:value=qualifiers().unwrap_or_default()
+                    prop:value={move || qualifiers().unwrap_or_default()}
                 />
             </div>
             <div class="input-row">
@@ -191,7 +191,7 @@ fn MainContent() -> impl IntoView {
                             None
                         }
                     ); }
-                    prop:value=subpath().unwrap_or_default()
+                    prop:value={move || subpath().unwrap_or_default()}
                 />
             </div>
         </div>
