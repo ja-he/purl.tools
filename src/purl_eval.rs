@@ -50,3 +50,7 @@ pub fn eval_purl_type(purl_type: PurlType) -> EvalResult {
         }
     }
 }
+
+pub fn eval_purl_namespace(purl_namespace: Vec<String>) -> EvalResult {
+    EvalResult::Verified("fake".to_string())
+}

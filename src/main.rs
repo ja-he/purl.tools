@@ -1,6 +1,8 @@
 use itertools::Itertools;
 use leptos::*;
 
+use crate::purl_data::PurlComponent;
+
 mod purl_data;
 
 #[macro_use]
@@ -51,7 +53,7 @@ fn MainContent() -> impl IntoView {
     // abtract: scheme:type/namespace/name@version?qualifiers#subpath
     // eg.:     pkg:github/package-url/purl-spec@244fd47e07d1004f0aed9c
     let (typex, set_typex) = create_signal(purl_data::PurlType::Github);
-    let (namespace, set_namespace) = create_signal(vec!["ja-he".to_string()]);
+    let (namespace, set_namespace) = create_signal(purl_data::PurlNamespace::new_naive("ja-he"));
     let (name, set_name) = create_signal("dayplan".to_string());
     let (version, set_version) = create_signal(Some("v0.9.4".to_string()));
     let (qualifiers, set_qualifiers) = create_signal(None);
@@ -121,6 +123,23 @@ fn MainContent() -> impl IntoView {
         }
     });
 
+    let eval_namespace = move || purl_eval::eval_purl_namespace(namespace());
+    let (eval_namespace_result, set_eval_namespace_result) = create_signal("verified".to_string());
+    let (eval_namespace_result_explanation, set_eval_namespace_result_explanation) =
+        create_signal("well-known identifier".to_string());
+    create_effect(move |_| {
+        let new = eval_namespace().summary();
+        let old = eval_namespace_result();
+        if old != new {
+            set_eval_namespace_result(new);
+        }
+        let new = eval_namespace().explanation();
+        let old = eval_namespace_result_explanation();
+        if old != new {
+            set_eval_namespace_result_explanation(new);
+        }
+    });
+
     let get_explanation_box_class =
         move || format!("explanation-box {result}", result = eval_type_result());
 
@@ -140,7 +159,7 @@ fn MainContent() -> impl IntoView {
                 <span class="input-label">"namespace"</span>
                 <input class="purl-component-input" type="text"
                     on:input=move |ev| {
-                        set_namespace(purl_data::parse_purl_namespace(&event_target_value(&ev)));
+                        set_namespace(purl_data::PurlComponent::new_naive(&event_target_value(&ev)));
                     }
                     prop:value={move || namespace().join("/")}
                 />
@@ -197,6 +216,7 @@ fn MainContent() -> impl IntoView {
             typex={typex}
             eval_type_result={eval_type_result}
             namespace={namespace}
+            eval_namespace_result={eval_namespace_result}
             name={name}
             version={version}
             qualifiers={qualifiers}
@@ -236,14 +256,25 @@ fn Purl(
     typex: ReadSignal<purl_data::PurlType>,
     eval_type_result: ReadSignal<String>,
     namespace: ReadSignal<Vec<String>>,
+    eval_namespace_result: ReadSignal<String>,
     name: ReadSignal<String>,
     version: ReadSignal<Option<String>>,
     qualifiers: ReadSignal<Option<String>>,
     subpath: ReadSignal<Option<String>>,
 ) -> impl IntoView {
+    let get_purl_type_classes =
+        move || format!("purl-type identifier-{result}", result = eval_type_result());
+    let get_purl_namespace_classes = move || {
+        format!(
+            "purl-namespace-full identifier-{result}",
+            result = eval_namespace_result()
+        )
+    };
+
     let namespace_and_leading_slash = move || {
         let namespace_view = move || {
             namespace()
+                .as_canonical()
                 .iter()
                 .map(|ns_part| view! { <span class="purl-namespace-part">{ns_part}</span> })
                 .intersperse_with(
@@ -253,14 +284,11 @@ fn Purl(
         };
         view! {
             <span class="purl-sep">"/"</span>
-            <span class="purl-namespace-full">
+            <span class={get_purl_namespace_classes}>
                 {namespace_view}
             </span>
         }
     };
-
-    let get_purl_type_classes =
-        move || format!("purl-type identifier-{result}", result = eval_type_result());
 
     // abtract: scheme:type/namespace/name@version?qualifiers#subpath
     view! {

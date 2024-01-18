@@ -431,6 +431,29 @@ pub const PURL_TYPES: &[PurlType] = &[
     PurlType::Yocto,
 ];
 
-pub fn parse_purl_namespace(s: &str) -> Vec<String> {
-    s.split('/').map(|s| s.to_string()).collect()
+pub type PurlNamespace = Vec<String>;
+
+pub trait PurlComponent {
+    fn new_naive(s: &str) -> Self;
+    fn as_canonical(&self) -> Self;
+}
+
+impl PurlComponent for PurlNamespace {
+    fn new_naive(s: &str) -> Self {
+        s.split('/').map(|s| s.to_string()).collect()
+    }
+
+    fn as_canonical(&self) -> Self {
+        // yeah, it's messy...
+        let without_leading_empties: PurlNamespace =
+            self.iter().cloned().skip_while(|s| s.is_empty()).collect();
+        let mut clean_but_reversed: PurlNamespace = without_leading_empties
+            .iter()
+            .cloned()
+            .rev()
+            .skip_while(|s| s.is_empty())
+            .collect();
+        clean_but_reversed.reverse();
+        clean_but_reversed // now just clean
+    }
 }
