@@ -1,4 +1,4 @@
-use crate::purl_data::{PurlType, PurlTypeStatus};
+use crate::purl_data::{self, PurlComponent, PurlType, PurlTypeStatus};
 
 lazy_static! {
     pub static ref TYPE_REGEX: regex::Regex =
@@ -51,6 +51,14 @@ pub fn eval_purl_type(purl_type: PurlType) -> EvalResult {
     }
 }
 
-pub fn eval_purl_namespace(purl_namespace: Vec<String>) -> EvalResult {
-    EvalResult::Verified("fake".to_string())
+pub fn eval_purl_namespace(purl_namespace: purl_data::PurlNamespace) -> EvalResult {
+    // TODO: regex check
+
+    if purl_namespace.len() != purl_namespace.as_canonical().len() {
+        return EvalResult::AtLeastValid(
+            "had to remove leading or trailing empty segments from namespace".to_string(),
+        );
+    }
+
+    EvalResult::ProbablyOk("I see no issue...".to_string())
 }

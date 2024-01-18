@@ -198,15 +198,18 @@
     text-decoration: underline #770000 0.2em;
     background-color: #ffbbbb;
   }
-  .explanation-icon.verified { color: #007700; }
-  .explanation-icon.ok       { color: #002266; }
-  .explanation-icon.valid    { color: #777700; }
-  .explanation-icon.invalid  { color: #770000; }
+  .explanation-box-wrapper {
+    align-self: start;
+    justify-self: center;
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    justify-items: center;
+    gap: 0.5em;
+  }
   .explanation-box {
     padding: 1em;
     border-radius: 0.5em;
-    align-self: start;
-    justify-self: center;
     width: 20em;
     display: grid;
     column-gap: 0.5em;
@@ -215,6 +218,10 @@
     grid-template-areas: "icon headline"
                          "icon explanation"
   }
+  .explanation-icon.verified { color: #007700; }
+  .explanation-icon.ok       { color: #002266; }
+  .explanation-icon.valid    { color: #777700; }
+  .explanation-icon.invalid  { color: #770000; }
   .explanation-box.verified  { background-color: #bbffbb; }
   .explanation-box.ok        { background-color: #aaddff; }
   .explanation-box.valid     { background-color: #ffffbb; }

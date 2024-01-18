@@ -140,8 +140,10 @@ fn MainContent() -> impl IntoView {
         }
     });
 
-    let get_explanation_box_class =
+    let get_type_explanation_box_class =
         move || format!("explanation-box {result}", result = eval_type_result());
+    let get_namespace_explanation_box_class =
+        move || format!("explanation-box {result}", result = eval_namespace_result());
 
     view! {
         <div id="input-form">
@@ -223,16 +225,29 @@ fn MainContent() -> impl IntoView {
             subpath={subpath}
         />
 
-        <div class={get_explanation_box_class}>
-            {move || match eval_type_result().as_str() {
-                "verified" => view!{<phosphor_leptos::Checks class="explanation-icon verified" weight=phosphor_leptos::IconWeight::Bold />},
-                "ok" => view!{<phosphor_leptos::Check class="explanation-icon ok" weight=phosphor_leptos::IconWeight::Bold />}       ,
-                "valid" => view!{<phosphor_leptos::Question class="explanation-icon valid" weight=phosphor_leptos::IconWeight::Bold />} ,
-                "invalid" => view!{<phosphor_leptos::Warning class="explanation-icon invalid" weight=phosphor_leptos::IconWeight::Bold />},
-                _ => view!{<phosphor_leptos::Warning class="explanation-icon error" weight=phosphor_leptos::IconWeight::Duotone />},
-            }}
-            <span class="headline">{eval_type_result}</span>
-            <span class="explanation">{eval_type_result_explanation}</span>
+        <div class="explanation-box-wrapper">
+            <div class={get_type_explanation_box_class}>
+                {move || match eval_type_result().as_str() {
+                    "verified" => view!{<phosphor_leptos::Checks class="explanation-icon verified" weight=phosphor_leptos::IconWeight::Bold />},
+                    "ok" => view!{<phosphor_leptos::Check class="explanation-icon ok" weight=phosphor_leptos::IconWeight::Bold />}       ,
+                    "valid" => view!{<phosphor_leptos::Question class="explanation-icon valid" weight=phosphor_leptos::IconWeight::Bold />} ,
+                    "invalid" => view!{<phosphor_leptos::Warning class="explanation-icon invalid" weight=phosphor_leptos::IconWeight::Bold />},
+                    _ => view!{<phosphor_leptos::Warning class="explanation-icon error" weight=phosphor_leptos::IconWeight::Duotone />},
+                }}
+                <span class="headline">{eval_type_result}</span>
+                <span class="explanation">{eval_type_result_explanation}</span>
+            </div>
+            <div class={get_namespace_explanation_box_class}>
+                {move || match eval_namespace_result().as_str() {
+                    "verified" => view!{<phosphor_leptos::Checks class="explanation-icon verified" weight=phosphor_leptos::IconWeight::Bold />},
+                    "ok" => view!{<phosphor_leptos::Check class="explanation-icon ok" weight=phosphor_leptos::IconWeight::Bold />}       ,
+                    "valid" => view!{<phosphor_leptos::Question class="explanation-icon valid" weight=phosphor_leptos::IconWeight::Bold />} ,
+                    "invalid" => view!{<phosphor_leptos::Warning class="explanation-icon invalid" weight=phosphor_leptos::IconWeight::Bold />},
+                    _ => view!{<phosphor_leptos::Warning class="explanation-icon error" weight=phosphor_leptos::IconWeight::Duotone />},
+                }}
+                <span class="headline">{eval_namespace_result}</span>
+                <span class="explanation">{eval_namespace_result_explanation}</span>
+            </div>
         </div>
     }
 }

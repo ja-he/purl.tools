@@ -440,6 +440,9 @@ pub trait PurlComponent {
 
 impl PurlComponent for PurlNamespace {
     fn new_naive(s: &str) -> Self {
+        if s.is_empty() {
+            return vec![];
+        }
         s.split('/').map(|s| s.to_string()).collect()
     }
 
