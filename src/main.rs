@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use leptos::*;
 
 mod purl_data;
@@ -50,7 +51,7 @@ fn MainContent() -> impl IntoView {
     // abtract: scheme:type/namespace/name@version?qualifiers#subpath
     // eg.:     pkg:github/package-url/purl-spec@244fd47e07d1004f0aed9c
     let (typex, set_typex) = create_signal(purl_data::PurlType::Github);
-    let (namespace, set_namespace) = create_signal(Some("ja-he".to_string()));
+    let (namespace, set_namespace) = create_signal(vec!["ja-he".to_string()]);
     let (name, set_name) = create_signal("dayplan".to_string());
     let (version, set_version) = create_signal(Some("v0.9.4".to_string()));
     let (qualifiers, set_qualifiers) = create_signal(None);
@@ -138,14 +139,10 @@ fn MainContent() -> impl IntoView {
             <div class="input-row">
                 <span class="input-label">"namespace"</span>
                 <input class="purl-component-input" type="text"
-                    on:input=move |ev| { set_namespace(
-                        if !event_target_value(&ev).is_empty() {
-                            Some(event_target_value(&ev))
-                        } else {
-                            None
-                        }
-                    ); }
-                    prop:value=namespace().unwrap_or_default()
+                    on:input=move |ev| {
+                        set_namespace(purl_data::parse_purl_namespace(&event_target_value(&ev)));
+                    }
+                    prop:value={move || namespace().join("/")}
                 />
             </div>
             <div class="input-row">
@@ -238,34 +235,27 @@ fn EvalIcon(eval_result: ReadSignal<purl_eval::EvalResult>) -> impl IntoView {
 fn Purl(
     typex: ReadSignal<purl_data::PurlType>,
     eval_type_result: ReadSignal<String>,
-    namespace: ReadSignal<Option<String>>,
+    namespace: ReadSignal<Vec<String>>,
     name: ReadSignal<String>,
     version: ReadSignal<Option<String>>,
     qualifiers: ReadSignal<Option<String>>,
     subpath: ReadSignal<Option<String>>,
 ) -> impl IntoView {
-    let namespace_and_leading_slash = {
-        move || {
-            namespace().is_some().then(|| {
-                view! {
-                    <span class="purl-sep">/</span>
-                    <span class="purl-namespace-full">
-                    {
-                        let parts_count = namespace().unwrap_or_default().split('/').count();
-                        namespace().unwrap_or_default().split('/').enumerate().map(|(index, ns_part)| {
-                            let ns_part = ns_part.to_string();
-                            view! {
-                                <span class="purl-namespace-part">{ns_part}</span>
-                                {
-                                    (index < parts_count-1)
-                                        .then(|| view!{ <span class="purl-sep namespace-inner-sep">"/"</span>})
-                                }
-                            }
-                        }).collect_view()
-                    }
-                    </span>
-                }
-            })
+    let namespace_and_leading_slash = move || {
+        let namespace_view = move || {
+            namespace()
+                .iter()
+                .map(|ns_part| view! { <span class="purl-namespace-part">{ns_part}</span> })
+                .intersperse_with(
+                    || view! { <span class="purl-sep namespace-inner-sep">"/"</span> },
+                )
+                .collect_view()
+        };
+        view! {
+            <span class="purl-sep">"/"</span>
+            <span class="purl-namespace-full">
+                {namespace_view}
+            </span>
         }
     };
 

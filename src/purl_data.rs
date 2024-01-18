@@ -430,3 +430,7 @@ pub const PURL_TYPES: &[PurlType] = &[
     PurlType::Wordpress,
     PurlType::Yocto,
 ];
+
+pub fn parse_purl_namespace(s: &str) -> Vec<String> {
+    s.split('/').map(|s| s.to_string()).collect()
+}

@@ -12,6 +12,7 @@ keywords = ["purl", "leptos", "web-app"]
 [dependencies]
 console_error_panic_hook = "0.1.7"
 console_log = "1.0.0"
+itertools = "0.12.0"
 lazy_static = "1.4.0"
 leptos = { version = "0.5.4", features = ["csr", "nightly"] }
 leptos_meta = { version = "0.5.4", features = ["csr"] }
