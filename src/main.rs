@@ -49,7 +49,7 @@ enum InputOption {
 fn MainContent() -> impl IntoView {
     // abtract: scheme:type/namespace/name@version?qualifiers#subpath
     // eg.:     pkg:github/package-url/purl-spec@244fd47e07d1004f0aed9c
-    let (typestr, set_typestr) = create_signal("github".to_string());
+    let (typex, set_typex) = create_signal(purl_data::PurlType::Github);
     let (namespace, set_namespace) = create_signal(Some("ja-he".to_string()));
     let (name, set_name) = create_signal("dayplan".to_string());
     let (version, set_version) = create_signal(Some("v0.9.4".to_string()));
@@ -57,16 +57,27 @@ fn MainContent() -> impl IntoView {
     let (subpath, set_subpath) = create_signal(None);
 
     let (type_input_option, set_type_input_option) = create_signal(InputOption::Select);
-    let get_type_input_field = move || match type_input_option.get() {
+    let get_type_input_field = move || {
+        match type_input_option.get() {
         InputOption::Select => view! {
                 <select class="purl-component-input" on:change=move |ev| {
                     let new_value = event_target_value(&ev);
-                    set_typestr(new_value);
+                    set_typex(purl_data::PurlType::new(&new_value));
                 }>
                     {
                         purl_data::PURL_TYPES.iter()
                             .map(|t| view! {
-                                <PurlTypeOption typestr=typestr is=t.to_string() status=t.status()/>
+                                <option
+                                    class={ match t.status() {
+                                        purl_data::PurlTypeStatus::WellKnown => "option-well-known",
+                                        purl_data::PurlTypeStatus::Proposed => "option-proposed",
+                                        purl_data::PurlTypeStatus::Other => "option-other", // this case would not happen, normally
+                                    }}
+                                    value=t.to_string()
+                                    selected=move || typex().to_string() == t.to_string()
+                                >
+                                    {t.to_string()}
+                                </option>
                             })
                             .collect_view()
                      }
@@ -75,11 +86,12 @@ fn MainContent() -> impl IntoView {
         .into_any(),
         InputOption::Raw => view! {
                 <input class="purl-component-input" type="text"
-                    on:input=move |ev| { set_typestr(event_target_value(&ev)); }
-                    prop:value=typestr
+                    on:input=move |ev| { set_typex(purl_data::PurlType::new(&event_target_value(&ev))); }
+                    prop:value={move || typex().to_string()}
                 />
         }
         .into_any(),
+    }
     };
 
     let cycle_type_input_option = move |_| {
@@ -91,7 +103,7 @@ fn MainContent() -> impl IntoView {
         })
     };
 
-    let eval_type = move || purl_eval::eval_purl_type(&typestr());
+    let eval_type = move || purl_eval::eval_purl_type(typex());
     let (eval_type_result, set_eval_type_result) = create_signal("verified".to_string());
     let (eval_type_result_explanation, set_eval_type_result_explanation) =
         create_signal("well-known identifier".to_string());
@@ -185,7 +197,7 @@ fn MainContent() -> impl IntoView {
         </div>
 
         <Purl
-            typestr={typestr}
+            typex={typex}
             eval_type_result={eval_type_result}
             namespace={namespace}
             name={name}
@@ -209,27 +221,6 @@ fn MainContent() -> impl IntoView {
 }
 
 #[component]
-pub fn PurlTypeOption(
-    typestr: ReadSignal<String>,
-    is: &'static str,
-    status: purl_data::PurlTypeStatus,
-) -> impl IntoView {
-    view! {
-        <option
-            class={ match status {
-                purl_data::PurlTypeStatus::WellKnown => "option-well-known",
-                purl_data::PurlTypeStatus::Proposed => "option-proposed",
-                purl_data::PurlTypeStatus::Other => "option-other", // this case would not happen, normally
-            }}
-            value=is
-            selected=move || typestr() == is
-        >
-            {is}
-        </option>
-    }
-}
-
-#[component]
 fn EvalIcon(eval_result: ReadSignal<purl_eval::EvalResult>) -> impl IntoView {
     view! {
         {
@@ -245,7 +236,7 @@ fn EvalIcon(eval_result: ReadSignal<purl_eval::EvalResult>) -> impl IntoView {
 
 #[component]
 fn Purl(
-    typestr: ReadSignal<String>,
+    typex: ReadSignal<purl_data::PurlType>,
     eval_type_result: ReadSignal<String>,
     namespace: ReadSignal<Option<String>>,
     name: ReadSignal<String>,
@@ -286,7 +277,7 @@ fn Purl(
         <div class="purl">
             <span class="purl-scheme">"pkg"</span>
             <span class="purl-sep">:</span>
-            <span class=get_purl_type_classes>{typestr}</span>
+            <span class=get_purl_type_classes>{move || typex.with(purl_data::PurlType::to_string)}</span>
             {namespace_and_leading_slash}
             <span class="purl-sep">/</span>
             <span class="purl-name">{name}</span>

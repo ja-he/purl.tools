@@ -32,16 +32,17 @@ impl EvalResult {
     }
 }
 
-pub fn eval_purl_type(s: &str) -> EvalResult {
-    match PurlType::new(s).status() {
+pub fn eval_purl_type(purl_type: PurlType) -> EvalResult {
+    match purl_type.status() {
         PurlTypeStatus::WellKnown => EvalResult::Verified("well-known identifier".to_string()),
         PurlTypeStatus::Proposed => {
             EvalResult::ProbablyOk("officially proposed identifier".to_string())
         }
         PurlTypeStatus::Other => {
-            if s.is_empty() {
+            let purl_type_str = purl_type.to_string();
+            if purl_type_str.is_empty() {
                 EvalResult::Invalid("type must not be empty".to_string())
-            } else if TYPE_REGEX.is_match(s) {
+            } else if TYPE_REGEX.is_match(&purl_type_str) {
                 EvalResult::AtLeastValid("valid identifier".to_string())
             } else {
                 EvalResult::Invalid("does not match regex".to_string())
