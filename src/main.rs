@@ -154,7 +154,9 @@ fn MainContent() -> impl IntoView {
                     id="type-input-toggle-button"
                     class="purl-input-options-button"
                     on:click=cycle_type_input_option>
-                    "switch input"
+                    <Show when=move || { type_input_option() == InputOption::Select } fallback=|| view! {<phosphor_leptos::Cursor class="button-icon" weight=phosphor_leptos::IconWeight::Bold />} >
+                        <phosphor_leptos::PencilSimple class="button-icon" weight=phosphor_leptos::IconWeight::Bold />
+                    </Show>
                 </button>
             </div>
             <div class="input-row">

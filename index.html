@@ -160,10 +160,9 @@
     width: 100%;
     display: grid;
     gap: 0.5em;
-    grid-template-columns: 6em 1fr 6em;
+    grid-template-columns: 6em 1fr 2em;
     grid-template-areas: "label input options";
   }
-
   .input-row > .input-label {
     grid-area: label;
   }
@@ -173,6 +172,10 @@
   }
   .input-row > .purl-input-options-button {
     grid-area: options;
+  }
+
+  .button-icon {
+    animation: animate-pop 0.5s ease-out;
   }
 
   .option-proposed {
