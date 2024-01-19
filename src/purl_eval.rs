@@ -72,6 +72,16 @@ pub fn eval_purl_namespace(
         }
     }
 
+    if typex == PurlType::Cargo && !purl_namespace.is_empty() {
+        if canonical.is_empty() {
+            return EvalResult::AtLeastValid("had to canonicalize".to_string());
+        } else {
+            return EvalResult::Invalid(
+                "namespace for Cargo (crates.io) should be empty".to_string(),
+            );
+        }
+    }
+
     if purl_namespace.len() != canonical.len() {
         return EvalResult::AtLeastValid("had to canonicalize".to_string());
     }
