@@ -52,11 +52,18 @@ pub fn eval_purl_type(purl_type: PurlType) -> EvalResult {
 }
 
 pub fn eval_purl_namespace(purl_namespace: purl_data::PurlNamespace) -> EvalResult {
+    let canonical = purl_namespace.as_canonical(); 
+    if canonical.iter().any(String::is_empty) {
+        return EvalResult::Invalid(
+            "contains empty (inner) segments".to_string(),
+        );
+    }
+
     // TODO: regex check
 
-    if purl_namespace.len() != purl_namespace.as_canonical().len() {
+    if purl_namespace.len() != canonical.len() {
         return EvalResult::AtLeastValid(
-            "had to remove leading or trailing empty segments from namespace".to_string(),
+            "had to canonicalize".to_string(),
         );
     }
 
