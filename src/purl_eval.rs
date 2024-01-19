@@ -51,21 +51,32 @@ pub fn eval_purl_type(purl_type: PurlType) -> EvalResult {
     }
 }
 
-pub fn eval_purl_namespace(purl_namespace: purl_data::PurlNamespace) -> EvalResult {
-    let canonical = purl_namespace.as_canonical(); 
+pub fn eval_purl_namespace(
+    purl_namespace: purl_data::PurlNamespace,
+    typex: purl_data::PurlType,
+) -> EvalResult {
+    let canonical = purl_namespace.as_canonical();
     if canonical.iter().any(String::is_empty) {
-        return EvalResult::Invalid(
-            "contains empty (inner) segments".to_string(),
-        );
+        return EvalResult::Invalid("contains empty (inner) segments".to_string());
     }
 
     // TODO: regex check
 
-    if purl_namespace.len() != canonical.len() {
-        return EvalResult::AtLeastValid(
-            "had to canonicalize".to_string(),
-        );
+    if typex == PurlType::Github && purl_namespace.len() != 1 {
+        if canonical.len() == 1 {
+            return EvalResult::AtLeastValid("had to canonicalize".to_string());
+        } else {
+            return EvalResult::Invalid(
+                "namespace for GitHub should have one element only".to_string(),
+            );
+        }
     }
 
-    EvalResult::ProbablyOk("I see no issue...".to_string())
+    if purl_namespace.len() != canonical.len() {
+        return EvalResult::AtLeastValid("had to canonicalize".to_string());
+    }
+
+    EvalResult::ProbablyOk(
+        "namespace seems good, but I did not have type-specific checks to run for it".to_string(),
+    )
 }

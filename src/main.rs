@@ -123,7 +123,7 @@ fn MainContent() -> impl IntoView {
         }
     });
 
-    let eval_namespace = move || purl_eval::eval_purl_namespace(namespace());
+    let eval_namespace = move || purl_eval::eval_purl_namespace(namespace(), typex());
     let (eval_namespace_result, set_eval_namespace_result) = create_signal("verified".to_string());
     let (eval_namespace_result_explanation, set_eval_namespace_result_explanation) =
         create_signal("well-known identifier".to_string());
