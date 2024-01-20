@@ -300,10 +300,12 @@ fn Purl(
                 .collect_view()
         };
         view! {
-            <span class="purl-sep">"/"</span>
-            <span class={get_purl_namespace_classes}>
-                {namespace_view}
-            </span>
+            <Show when=move || !namespace().as_canonical().is_empty()>
+                <span class="purl-sep">"/"</span>
+                <span class={get_purl_namespace_classes}>
+                    {namespace_view}
+                </span>
+            </Show>
         }
     };
 
