@@ -147,6 +147,41 @@ pub fn eval_purl_namespace(
 
     EvalResult::aggregate(&findings)
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::purl_data::{PurlComponent, PurlNamespace, PurlType};
+
+    use super::eval_purl_namespace;
+
+    use paste::paste;
+
+    // credit for this approach to table-driven tests: burntsushi
+    macro_rules! test_eval_ns {
+        ($name:ident, $t:expr, $ns:expr, $expect:expr) => {
+            paste! {
+            #[test]
+            fn [<test_eval_ns_ $name>]() {
+                let typex = $t;
+                let namespace = $ns;
+                let expected_summary = $expect;
+                let result = eval_purl_namespace(PurlNamespace::new_naive(namespace), PurlType::new(typex));
+                result.summary().ne(expected_summary).then(|| {
+                    panic!("for type '{typex}' and ns '{namespace}' expected '{expected_summary}' but got '{actual}'", actual=result.summary())
+                });
+            }
+            }
+        }
     }
 
+    test_eval_ns!(gh_normal, "github", "ja-he", "ok");
+    test_eval_ns!(gh_empty, "github", "", "invalid"); // empty for github
+    test_eval_ns!(gh_trailslash, "github", "ja-he/", "valid");
+    test_eval_ns!(gh_trailslash_many, "github", "ja-he////", "valid");
+    test_eval_ns!(gh_leadslash_many, "github", "////ja-he", "valid");
+    test_eval_ns!(gh_lead_and_trailslash, "github", "////ja-he//", "valid");
+    test_eval_ns!(gh_two_parts, "github", "ja/he", "invalid"); // more than 1 for github
+    test_eval_ns!(github_underscore, "github", "ja_he", "invalid"); // github does not allow underscores
+    test_eval_ns!(github_trailing_hyphen, "github", "jahe-", "invalid");
+    test_eval_ns!(github_leading_hyphen, "github", "-jahe", "invalid");
 }

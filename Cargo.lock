@@ -1153,6 +1153,7 @@ dependencies = [
  "leptos",
  "leptos_meta",
  "log",
+ "paste",
  "phosphor-leptos",
  "regex",
 ]
