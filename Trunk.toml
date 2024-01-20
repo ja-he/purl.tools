@@ -1,6 +1,6 @@
 [build]
 target = "index.html"
-public_url = "https://purltools.hensel.dev/"
+public_url = "https://purl.tools/"
 release = true
 filehash = false
 
