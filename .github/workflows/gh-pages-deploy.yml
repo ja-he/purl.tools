@@ -43,6 +43,8 @@ jobs:
       - name: lint
         run: cargo clippy & cargo fmt
 
+      - name: test
+        run: cargo test
 
       # If using tailwind...
       # - name: Download and install tailwindcss binary
