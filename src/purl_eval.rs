@@ -182,6 +182,36 @@ pub fn eval_purl_name(
     EvalResult::aggregate(&findings)
 }
 
+pub fn eval_purl_version(version: Option<String>) -> EvalResult {
+    match version {
+        None => EvalResult::ProbablyOk("nothing to check on version".to_string()),
+        Some(s) => {
+            let mut findings = vec![];
+            EvalResult::aggregate(&findings)
+        }
+    }
+}
+
+pub fn eval_purl_qualifiers(qualifiers: Option<String>) -> EvalResult {
+    match qualifiers {
+        None => EvalResult::ProbablyOk("nothing to check on qualifiers".to_string()),
+        Some(s) => {
+            let mut findings = vec![];
+            EvalResult::aggregate(&findings)
+        }
+    }
+}
+
+pub fn eval_purl_subpath(subpath: Option<String>) -> EvalResult {
+    match subpath {
+        None => EvalResult::ProbablyOk("nothing to check on subpath".to_string()),
+        Some(s) => {
+            let mut findings = vec![];
+            EvalResult::aggregate(&findings)
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::purl_data::{PurlComponent, PurlNamespace, PurlType};

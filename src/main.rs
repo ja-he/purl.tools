@@ -157,12 +157,73 @@ fn MainContent() -> impl IntoView {
         }
     });
 
+    let eval_version = move || purl_eval::eval_purl_version(version());
+    let (eval_version_result, set_eval_version_result) = create_signal("ok".to_string());
+    let (eval_version_result_explanation, set_eval_version_result_explanation) =
+        create_signal("well-known identifier".to_string());
+    create_effect(move |_| {
+        let new = eval_version().summary();
+        let old = eval_version_result();
+        if old != new {
+            set_eval_version_result(new);
+        }
+        let new = eval_version().explanation();
+        let old = eval_version_result_explanation();
+        if old != new {
+            set_eval_version_result_explanation(new);
+        }
+    });
+
+    let eval_qualifiers = move || purl_eval::eval_purl_qualifiers(qualifiers());
+    let (eval_qualifiers_result, set_eval_qualifiers_result) = create_signal("ok".to_string());
+    let (eval_qualifiers_result_explanation, set_eval_qualifiers_result_explanation) =
+        create_signal("well-known identifier".to_string());
+    create_effect(move |_| {
+        let new = eval_qualifiers().summary();
+        let old = eval_qualifiers_result();
+        if old != new {
+            set_eval_qualifiers_result(new);
+        }
+        let new = eval_qualifiers().explanation();
+        let old = eval_qualifiers_result_explanation();
+        if old != new {
+            set_eval_qualifiers_result_explanation(new);
+        }
+    });
+
+    let eval_subpath = move || purl_eval::eval_purl_subpath(subpath());
+    let (eval_subpath_result, set_eval_subpath_result) = create_signal("ok".to_string());
+    let (eval_subpath_result_explanation, set_eval_subpath_result_explanation) =
+        create_signal("well-known identifier".to_string());
+    create_effect(move |_| {
+        let new = eval_subpath().summary();
+        let old = eval_subpath_result();
+        if old != new {
+            set_eval_subpath_result(new);
+        }
+        let new = eval_subpath().explanation();
+        let old = eval_subpath_result_explanation();
+        if old != new {
+            set_eval_subpath_result_explanation(new);
+        }
+    });
+
     let get_type_explanation_box_class =
         move || format!("explanation-box {result}", result = eval_type_result());
     let get_namespace_explanation_box_class =
         move || format!("explanation-box {result}", result = eval_namespace_result());
     let get_name_explanation_box_class =
         move || format!("explanation-box {result}", result = eval_name_result());
+    let get_version_explanation_box_class =
+        move || format!("explanation-box {result}", result = eval_version_result());
+    let get_qualifiers_explanation_box_class = move || {
+        format!(
+            "explanation-box {result}",
+            result = eval_qualifiers_result()
+        )
+    };
+    let get_subpath_explanation_box_class =
+        move || format!("explanation-box {result}", result = eval_subpath_result());
 
     view! {
         <div id="input-form">
@@ -243,8 +304,11 @@ fn MainContent() -> impl IntoView {
             name={name}
             eval_name_result={eval_name_result}
             version={version}
+            eval_version_result={eval_version_result}
             qualifiers={qualifiers}
+            eval_qualifiers_result={eval_qualifiers_result}
             subpath={subpath}
+            eval_subpath_result={eval_subpath_result}
         />
 
         <div class="explanation-box-wrapper">
@@ -281,6 +345,39 @@ fn MainContent() -> impl IntoView {
                 <span class="headline">{eval_name_result}</span>
                 <span class="explanation">{eval_name_result_explanation}</span>
             </div>
+            <div class={get_version_explanation_box_class}>
+                {move || match eval_name_result().as_str() {
+                    "verified" => view!{<phosphor_leptos::Checks class="explanation-icon verified" weight=phosphor_leptos::IconWeight::Bold />},
+                    "ok" => view!{<phosphor_leptos::Check class="explanation-icon ok" weight=phosphor_leptos::IconWeight::Bold />}       ,
+                    "valid" => view!{<phosphor_leptos::Question class="explanation-icon valid" weight=phosphor_leptos::IconWeight::Bold />} ,
+                    "invalid" => view!{<phosphor_leptos::Warning class="explanation-icon invalid" weight=phosphor_leptos::IconWeight::Bold />},
+                    _ => view!{<phosphor_leptos::Warning class="explanation-icon error" weight=phosphor_leptos::IconWeight::Duotone />},
+                }}
+                <span class="headline">{eval_version_result}</span>
+                <span class="explanation">{eval_version_result_explanation}</span>
+            </div>
+            <div class={get_qualifiers_explanation_box_class}>
+                {move || match eval_qualifiers_result().as_str() {
+                    "verified" => view!{<phosphor_leptos::Checks class="explanation-icon verified" weight=phosphor_leptos::IconWeight::Bold />},
+                    "ok" => view!{<phosphor_leptos::Check class="explanation-icon ok" weight=phosphor_leptos::IconWeight::Bold />}       ,
+                    "valid" => view!{<phosphor_leptos::Question class="explanation-icon valid" weight=phosphor_leptos::IconWeight::Bold />} ,
+                    "invalid" => view!{<phosphor_leptos::Warning class="explanation-icon invalid" weight=phosphor_leptos::IconWeight::Bold />},
+                    _ => view!{<phosphor_leptos::Warning class="explanation-icon error" weight=phosphor_leptos::IconWeight::Duotone />},
+                }}
+                <span class="headline">{eval_qualifiers_result}</span>
+                <span class="explanation">{eval_qualifiers_result_explanation}</span>
+            </div>
+            <div class={get_subpath_explanation_box_class}>
+                {move || match eval_subpath_result().as_str() {
+                    "verified" => view!{<phosphor_leptos::Checks class="explanation-icon verified" weight=phosphor_leptos::IconWeight::Bold />},
+                    "ok" => view!{<phosphor_leptos::Check class="explanation-icon ok" weight=phosphor_leptos::IconWeight::Bold />}       ,
+                    "valid" => view!{<phosphor_leptos::Question class="explanation-icon valid" weight=phosphor_leptos::IconWeight::Bold />} ,
+                    "invalid" => view!{<phosphor_leptos::Warning class="explanation-icon invalid" weight=phosphor_leptos::IconWeight::Bold />},
+                    _ => view!{<phosphor_leptos::Warning class="explanation-icon error" weight=phosphor_leptos::IconWeight::Duotone />},
+                }}
+                <span class="headline">{eval_subpath_result}</span>
+                <span class="explanation">{eval_subpath_result_explanation}</span>
+            </div>
         </div>
     }
 }
@@ -308,8 +405,11 @@ fn Purl(
     name: ReadSignal<String>,
     eval_name_result: ReadSignal<String>,
     version: ReadSignal<Option<String>>,
+    eval_version_result: ReadSignal<String>,
     qualifiers: ReadSignal<Option<String>>,
+    eval_qualifiers_result: ReadSignal<String>,
     subpath: ReadSignal<Option<String>>,
+    eval_subpath_result: ReadSignal<String>,
 ) -> impl IntoView {
     let get_purl_type_classes =
         move || format!("purl-type identifier-{result}", result = eval_type_result());
@@ -321,6 +421,24 @@ fn Purl(
     };
     let get_purl_name_classes =
         move || format!("purl-name identifier-{result}", result = eval_name_result());
+    let get_purl_version_classes = move || {
+        format!(
+            "purl-version identifier-{result}",
+            result = eval_version_result()
+        )
+    };
+    let get_purl_qualifiers_classes = move || {
+        format!(
+            "purl-qualifiers identifier-{result}",
+            result = eval_qualifiers_result()
+        )
+    };
+    let get_purl_subpath_classes = move || {
+        format!(
+            "purl-subpath identifier-{result}",
+            result = eval_subpath_result()
+        )
+    };
 
     let namespace_and_leading_slash = move || {
         let namespace_view = move || {
@@ -356,7 +474,7 @@ fn Purl(
                 version.get().is_some().then(|| {
                     view! {
                         <span class="purl-sep">@</span>
-                        <span class="purl-version">{version}</span>
+                        <span class=get_purl_version_classes>{version}</span>
                     }
                 })
             }}
@@ -364,7 +482,7 @@ fn Purl(
                 qualifiers.get().is_some().then(|| {
                     view! {
                         <span class="purl-sep">?</span>
-                        <span class="purl-qualifiers">{move || qualifiers.get()}</span>
+                        <span class=get_purl_qualifiers_classes>{move || qualifiers.get()}</span>
                     }
                 })
             }}
@@ -372,7 +490,7 @@ fn Purl(
                 subpath.get().is_some().then(|| {
                     view! {
                         <span class="purl-sep">#</span>
-                        <span class="purl-subpath">{subpath}</span>
+                        <span class=get_purl_subpath_classes>{subpath}</span>
                     }
                 })
             }}
