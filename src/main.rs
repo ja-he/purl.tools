@@ -171,8 +171,8 @@ fn MainContent() -> impl IntoView {
             <div class="input-row">
                 <span class="input-label">"name"</span>
                 <input class="purl-component-input" type="text"
-                    on:input=move |ev| { set_name(event_target_value(&ev)); }
-                    prop:value=name
+                    on:input=move |ev| { set_name(urlencoding::encode(&event_target_value(&ev)).into_owned()); }
+                    prop:value=move || urlencoding::decode(&name()).unwrap_or_default().into_owned()
                 />
             </div>
             <div class="input-row">
