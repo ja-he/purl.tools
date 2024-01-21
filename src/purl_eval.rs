@@ -162,6 +162,11 @@ pub fn eval_purl_name(
             "could not decode, so it must not be a valid percent-encoded string ({e})"
         ));
     }
+    if purl_name.is_empty() {
+        return EvalResult::Invalid(
+            "a name is required (meaning also that it may not be empty)".to_string(),
+        );
+    }
 
     let canonical_namespace = purl_namespace.as_canonical();
     let mut findings = vec![];
