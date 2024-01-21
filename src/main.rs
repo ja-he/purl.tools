@@ -140,10 +140,29 @@ fn MainContent() -> impl IntoView {
         }
     });
 
+    let eval_name = move || purl_eval::eval_purl_name(name(), namespace(), typex());
+    let (eval_name_result, set_eval_name_result) = create_signal("verified".to_string());
+    let (eval_name_result_explanation, set_eval_name_result_explanation) =
+        create_signal("well-known identifier".to_string());
+    create_effect(move |_| {
+        let new = eval_name().summary();
+        let old = eval_name_result();
+        if old != new {
+            set_eval_name_result(new);
+        }
+        let new = eval_name().explanation();
+        let old = eval_name_result_explanation();
+        if old != new {
+            set_eval_name_result_explanation(new);
+        }
+    });
+
     let get_type_explanation_box_class =
         move || format!("explanation-box {result}", result = eval_type_result());
     let get_namespace_explanation_box_class =
         move || format!("explanation-box {result}", result = eval_namespace_result());
+    let get_name_explanation_box_class =
+        move || format!("explanation-box {result}", result = eval_name_result());
 
     view! {
         <div id="input-form">
@@ -222,6 +241,7 @@ fn MainContent() -> impl IntoView {
             namespace={namespace}
             eval_namespace_result={eval_namespace_result}
             name={name}
+            eval_name_result={eval_name_result}
             version={version}
             qualifiers={qualifiers}
             subpath={subpath}
@@ -250,6 +270,17 @@ fn MainContent() -> impl IntoView {
                 <span class="headline">{eval_namespace_result}</span>
                 <span class="explanation">{eval_namespace_result_explanation}</span>
             </div>
+            <div class={get_name_explanation_box_class}>
+                {move || match eval_name_result().as_str() {
+                    "verified" => view!{<phosphor_leptos::Checks class="explanation-icon verified" weight=phosphor_leptos::IconWeight::Bold />},
+                    "ok" => view!{<phosphor_leptos::Check class="explanation-icon ok" weight=phosphor_leptos::IconWeight::Bold />}       ,
+                    "valid" => view!{<phosphor_leptos::Question class="explanation-icon valid" weight=phosphor_leptos::IconWeight::Bold />} ,
+                    "invalid" => view!{<phosphor_leptos::Warning class="explanation-icon invalid" weight=phosphor_leptos::IconWeight::Bold />},
+                    _ => view!{<phosphor_leptos::Warning class="explanation-icon error" weight=phosphor_leptos::IconWeight::Duotone />},
+                }}
+                <span class="headline">{eval_name_result}</span>
+                <span class="explanation">{eval_name_result_explanation}</span>
+            </div>
         </div>
     }
 }
@@ -275,6 +306,7 @@ fn Purl(
     namespace: ReadSignal<Vec<String>>,
     eval_namespace_result: ReadSignal<String>,
     name: ReadSignal<String>,
+    eval_name_result: ReadSignal<String>,
     version: ReadSignal<Option<String>>,
     qualifiers: ReadSignal<Option<String>>,
     subpath: ReadSignal<Option<String>>,
@@ -287,6 +319,8 @@ fn Purl(
             result = eval_namespace_result()
         )
     };
+    let get_purl_name_classes =
+        move || format!("purl-name identifier-{result}", result = eval_name_result());
 
     let namespace_and_leading_slash = move || {
         let namespace_view = move || {
@@ -317,7 +351,7 @@ fn Purl(
             <span class=get_purl_type_classes>{move || typex.with(purl_data::PurlType::to_string)}</span>
             {namespace_and_leading_slash}
             <span class="purl-sep">/</span>
-            <span class="purl-name">{name}</span>
+            <span class=get_purl_name_classes>{name}</span>
             { move || {
                 version.get().is_some().then(|| {
                     view! {

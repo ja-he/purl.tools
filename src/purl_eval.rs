@@ -7,6 +7,9 @@ lazy_static! {
     // "may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen"
     pub static ref GITHUB_USERNAME_REGEX: regex::Regex =
         regex::Regex::new(r"^[a-zA-Z0-9]+(-?[a-zA-Z0-9]+)*$").unwrap();
+
+    pub static ref GITHUB_REPO_NAME_REGEX: regex::Regex =
+        regex::Regex::new(r"^[a-zA-Z\._\-][a-zA-Z0-9\._\-]*$").unwrap();
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -143,6 +146,37 @@ pub fn eval_purl_namespace(
                     .to_string(),
             ));
         }
+    }
+
+    EvalResult::aggregate(&findings)
+}
+
+pub fn eval_purl_name(
+    purl_name: String,
+    purl_namespace: purl_data::PurlNamespace,
+    typex: purl_data::PurlType,
+) -> EvalResult {
+    // sanity check: ensure valid percent-encoding
+    if let Err(e) = urlencoding::decode(&purl_name) {
+        return EvalResult::Invalid(format!(
+            "could not decode, so it must not be a valid percent-encoded string ({e})"
+        ));
+    }
+
+    let canonical_namespace = purl_namespace.as_canonical();
+    let mut findings = vec![];
+
+    match typex {
+        PurlType::Github => {
+            findings.push(if GITHUB_REPO_NAME_REGEX.is_match(&purl_name) {
+                EvalResult::ProbablyOk("name is valid for a GitHub repo".to_string())
+            } else {
+                EvalResult::AtLeastValid("name is not valid as a GitHub repo name".to_string())
+            });
+        }
+        _ => findings.push(EvalResult::ProbablyOk(
+            "do not have any type-specific name checks to perform".to_string(),
+        )),
     }
 
     EvalResult::aggregate(&findings)
