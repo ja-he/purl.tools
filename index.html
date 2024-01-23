@@ -13,6 +13,13 @@
   <link data-trunk rel="copy-file" href="./src/assets/404.html" />
 
   <style>
+  html {
+    --header-height: 4em;
+    --footer-height: 4em;
+    --purl-height: 8em;
+    --explanations-width: 20em;
+  }
+
   body {
     margin: 0;
     width: 100vw;
@@ -26,12 +33,12 @@
     align-items: center;
     justify-items: center;
     grid-template-columns: 1fr;
-    grid-template-rows: 4em 1fr 4em;
+    grid-template-rows: var(--header-height) 1fr var(--footer-height);
     grid-template-areas: "header"
                          "main"
                          "footer";
   }
-  
+
   #header {
     width: 100%;
     grid-area: header;
@@ -41,7 +48,7 @@
     grid-template-columns: 4em 1fr 4em;
     grid-template-areas: "left center right";
   }
-  
+
   #main-title {
     grid-area: center;
     font-size: 2em;
@@ -74,7 +81,7 @@
   #theme-toggle {
     grid-area: right;
   }
-  
+
   #footer {
     grid-area: footer;
   }
@@ -88,10 +95,18 @@
     width: 100%;
   }
 
+  @media (min-height: 80em) {
+    #main-content {
+      grid-template-rows: 2fr var(--purl-height) 3fr;
+    }
+  }
+  @media not (min-height: 80em) {
+    #main-content {
+      grid-template-rows: auto var(--purl-height) auto;
+    }
+  }
   #main-content {
-    height: 100%;
     display: grid;
-    grid-template-rows: 1fr 8em 1fr;
     gap: 1em;
   }
 
@@ -213,7 +228,7 @@
   .explanation-box {
     padding: 1em;
     border-radius: 0.5em;
-    width: 20em;
+    width: var(--explanations-width);
     display: grid;
     column-gap: 0.5em;
     grid-template-columns: auto 1fr;
