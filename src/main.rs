@@ -8,6 +8,7 @@ mod purl_data;
 #[macro_use]
 extern crate lazy_static;
 mod purl_eval;
+mod purl_eval_cratesio;
 
 #[component]
 fn App() -> impl IntoView {
@@ -106,7 +107,7 @@ fn MainContent() -> impl IntoView {
         })
     };
 
-    let eval_type = move || purl_eval::eval_purl_type(typex());
+    let eval_type = Signal::derive(move || purl_eval::eval_purl_type(typex()));
     let (eval_type_result, set_eval_type_result) = create_signal("verified".to_string());
     let (eval_type_result_explanation, set_eval_type_result_explanation) =
         create_signal("well-known identifier".to_string());
@@ -123,24 +124,13 @@ fn MainContent() -> impl IntoView {
         }
     });
 
-    let eval_namespace = move || purl_eval::eval_purl_namespace(namespace(), typex());
+    let eval_namespace =
+        Signal::derive(move || purl_eval::eval_purl_namespace(namespace(), typex()));
     let (eval_namespace_result, set_eval_namespace_result) = create_signal("verified".to_string());
     let (eval_namespace_result_explanation, set_eval_namespace_result_explanation) =
         create_signal("well-known identifier".to_string());
-    create_effect(move |_| {
-        let new = eval_namespace().summary();
-        let old = eval_namespace_result();
-        if old != new {
-            set_eval_namespace_result(new);
-        }
-        let new = eval_namespace().explanation();
-        let old = eval_namespace_result_explanation();
-        if old != new {
-            set_eval_namespace_result_explanation(new);
-        }
-    });
 
-    let eval_name = move || purl_eval::eval_purl_name(name(), namespace(), typex());
+    let eval_name = Signal::derive(move || purl_eval::eval_purl_name(name(), namespace(), typex()));
     let (eval_name_result, set_eval_name_result) = create_signal("verified".to_string());
     let (eval_name_result_explanation, set_eval_name_result_explanation) =
         create_signal("well-known identifier".to_string());
@@ -207,6 +197,76 @@ fn MainContent() -> impl IntoView {
             set_eval_subpath_result_explanation(new);
         }
     });
+
+    create_effect(move |_| {
+        let new = eval_namespace().summary();
+        let old = eval_namespace_result();
+        if old != new {
+            set_eval_namespace_result(new);
+        }
+        let new = eval_namespace().explanation();
+        let old = eval_namespace_result_explanation();
+        if old != new {
+            set_eval_namespace_result_explanation(new);
+        }
+    });
+    let all_at_least_probably_ok = Signal::derive(move || {
+        with!(|eval_type, eval_namespace, eval_name| {
+            let ok = &purl_eval::EvalResult::ProbablyOk("".to_string());
+            eval_type.at_least_as_good_as(ok)
+                && eval_namespace.at_least_as_good_as(ok)
+                && eval_name.at_least_as_good_as(ok)
+        })
+    });
+    let full_purl_debounced = leptos_use::signal_debounced(
+        Signal::derive(move || {
+            with!(
+                |typex, namespace, name, version, all_at_least_probably_ok| {
+                    (
+                        typex.clone(),
+                        namespace.join("/").clone(),
+                        name.clone(),
+                        version.clone(),
+                        *all_at_least_probably_ok,
+                    )
+                }
+            )
+        }),
+        1000.0,
+    );
+    let async_data = create_resource(
+        full_purl_debounced,
+        // every time `count` changes, this will run
+        |(t, ns, n, v, ok)| async move {
+            if !ok {
+                return None;
+            }
+
+            match t {
+                purl_data::PurlType::Cargo => {
+                    log::debug!("doing the crates.io API call!");
+
+                    if let Ok(versions) = purl_eval_cratesio::get_versions(&n).await {
+                        if let Some(v) = v {
+                            if versions.contains(&v) {
+                                Some("crates.io says crate and version exist".to_string())
+                            } else {
+                                Some(
+                                    "crates.io says the crate exists but the version does not"
+                                        .to_string(),
+                                )
+                            }
+                        } else {
+                            Some("crates.io says that crate exists, and i don't have a version to check for".to_string())
+                        }
+                    } else {
+                        Some("this crate seems to not exist".to_string())
+                    }
+                }
+                _ => Some("nothing to check...".to_string()),
+            }
+        },
+    );
 
     let get_type_explanation_box_class =
         move || format!("explanation-box {result}", result = eval_type_result());
@@ -312,6 +372,15 @@ fn MainContent() -> impl IntoView {
         />
 
         <div class="explanation-box-wrapper">
+            <div class="dummy">
+            {
+                move || match async_data() {
+                    Some(Some(s)) => s,
+                    Some(None) => format!("i got something that says i got nothing"),
+                    None => format!("i got nuthin..."),
+                }
+            }
+            </div>
             <div class={get_type_explanation_box_class}>
                 {move || match eval_type_result().as_str() {
                     "verified" => view!{<phosphor_leptos::Checks class="explanation-icon verified" weight=phosphor_leptos::IconWeight::Bold />},

@@ -59,6 +59,18 @@ impl EvalResult {
             (EvalResult::Invalid(_), _) => true,
         }
     }
+    pub fn at_least_as_good_as(&self, other: &EvalResult) -> bool {
+        self.same_level(other) || other.more_severe_than(self)
+    }
+    pub fn same_level(&self, other: &EvalResult) -> bool {
+        match (self, other) {
+            (EvalResult::Verified(_), EvalResult::Verified(_)) |
+            (EvalResult::ProbablyOk(_), EvalResult::ProbablyOk(_)) |
+            (EvalResult::AtLeastValid(_), EvalResult::AtLeastValid(_)) |
+            (EvalResult::Invalid(_), EvalResult::Invalid(_)) => true,
+            _ => false,
+        }
+    }
     pub fn combine(&self, other: &EvalResult) -> EvalResult {
         match (self, other) {
             (EvalResult::Verified(s), EvalResult::Verified(o)) => {
@@ -221,7 +233,7 @@ pub fn eval_purl_subpath(subpath: Option<String>) -> EvalResult {
 mod tests {
     use crate::purl_data::{PurlComponent, PurlNamespace, PurlType};
 
-    use super::eval_purl_namespace;
+    use super::{eval_purl_namespace, EvalResult};
 
     use paste::paste;
 
@@ -253,4 +265,31 @@ mod tests {
     test_eval_ns!(github_underscore, "github", "ja_he", "invalid"); // github does not allow underscores
     test_eval_ns!(github_trailing_hyphen, "github", "jahe-", "invalid");
     test_eval_ns!(github_leading_hyphen, "github", "-jahe", "invalid");
+
+    macro_rules! test_alaga {
+        ($name:ident, $l:expr, $r:expr, $expect:expr) => {
+            paste! {
+            #[test]
+            fn [<test_alaga_ $name>]() {
+                let l = $l;
+                let r = $r;
+                let expected = $expect;
+                let result = l.at_least_as_good_as(&r);
+                if result != expected {
+                    panic!("alaga({l},{r}) expects {expected} got {result}", l=l.summary(), r=r.summary())
+                }
+            }
+            }
+        }
+    }
+
+    test_alaga!(verif_verif, EvalResult::Verified("".to_string()), EvalResult::Verified("".to_string()), true);
+    test_alaga!(ok_ok, EvalResult::ProbablyOk("".to_string()), EvalResult::ProbablyOk("".to_string()), true);
+    test_alaga!(valid_valid, EvalResult::AtLeastValid("".to_string()), EvalResult::AtLeastValid("".to_string()), true);
+    test_alaga!(inv_inv, EvalResult::Invalid("".to_string()), EvalResult::Invalid("".to_string()), true);
+    test_alaga!(verif_ok, EvalResult::Verified("".to_string()), EvalResult::ProbablyOk("".to_string()), true);
+    test_alaga!(verif_valid, EvalResult::Verified("".to_string()), EvalResult::AtLeastValid("".to_string()), true);
+    test_alaga!(verif_inv, EvalResult::Verified("".to_string()), EvalResult::Invalid("".to_string()), true);
+    test_alaga!(inv_valid, EvalResult::Invalid("".to_string()), EvalResult::AtLeastValid("".to_string()), false);
+
 }
