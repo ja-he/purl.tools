@@ -32,20 +32,11 @@ impl std::fmt::Display for EvalResultLevel {
 }
 
 impl EvalResultLevel {
-    // pub fn to_string(&self) -> String {
-    //     match self {
-    //         EvalResultLevel::Verified => "verified",
-    //         EvalResultLevel::ProbablyOk => "ok",
-    //         EvalResultLevel::AtLeastValid => "valid",
-    //         EvalResultLevel::Invalid => "invalid",
-    //     }
-    //     .to_string()
-    // }
     pub fn more_severe_than(&self, other: &EvalResultLevel) -> bool {
-        return self > other;
+        self > other
     }
     pub fn at_least_as_good_as(&self, other: &EvalResultLevel) -> bool {
-        return self <= other;
+        self <= other
     }
 }
 
@@ -56,10 +47,7 @@ pub struct EvalResult {
 }
 
 impl EvalResult {
-    pub fn summary(&self) -> String {
-        self.level.to_string()
-    }
-    pub fn aggregate(results: &Vec<EvalResult>) -> EvalResult {
+    pub fn aggregate(results: &[EvalResult]) -> EvalResult {
         results
             .iter()
             .cloned()
@@ -166,7 +154,11 @@ pub fn eval_purl_namespace(
                 });
             }
 
-            findings.push(EvalResult{level:EvalResultLevel::ProbablyOk,explanation:"namespace looks good for GitHub type, but I did not verify for existence with GitHub".to_string(),});
+            findings.push(EvalResult {
+                level: EvalResultLevel::ProbablyOk,
+                explanation: "namespace looks good for GitHub type, but I did not verify for existence with GitHub"
+                    .to_string(),
+            });
         }
         PurlType::Cargo => {
             if !canonical.is_empty() {
@@ -280,7 +272,7 @@ pub fn eval_purl_subpath(subpath: Option<String>) -> EvalResult {
 mod tests {
     use crate::purl_data::{PurlComponent, PurlNamespace, PurlType};
 
-    use super::{eval_purl_namespace, EvalResult, EvalResultLevel};
+    use super::{eval_purl_namespace, EvalResultLevel};
 
     use paste::paste;
 
@@ -292,26 +284,61 @@ mod tests {
             fn [<test_eval_ns_ $name>]() {
                 let typex = $t;
                 let namespace = $ns;
-                let expected_summary = $expect;
+                let expected_level = $expect;
                 let result = eval_purl_namespace(PurlNamespace::new_naive(namespace), PurlType::new(typex));
-                result.summary().ne(expected_summary).then(|| {
-                    panic!("for type '{typex}' and ns '{namespace}' expected '{expected_summary}' but got '{actual}'", actual=result.summary())
+                (result.level != expected_level).then(|| {
+                    panic!("for type '{typex}' and ns '{namespace}' expected '{expected_level}' but got '{actual}'", actual=result.level)
                 });
             }
             }
         }
     }
 
-    test_eval_ns!(gh_normal, "github", "ja-he", "ok");
-    test_eval_ns!(gh_empty, "github", "", "invalid"); // empty for github
-    test_eval_ns!(gh_trailslash, "github", "ja-he/", "valid");
-    test_eval_ns!(gh_trailslash_many, "github", "ja-he////", "valid");
-    test_eval_ns!(gh_leadslash_many, "github", "////ja-he", "valid");
-    test_eval_ns!(gh_lead_and_trailslash, "github", "////ja-he//", "valid");
-    test_eval_ns!(gh_two_parts, "github", "ja/he", "invalid"); // more than 1 for github
-    test_eval_ns!(github_underscore, "github", "ja_he", "invalid"); // github does not allow underscores
-    test_eval_ns!(github_trailing_hyphen, "github", "jahe-", "invalid");
-    test_eval_ns!(github_leading_hyphen, "github", "-jahe", "invalid");
+    test_eval_ns!(gh_normal, "github", "ja-he", EvalResultLevel::ProbablyOk);
+    test_eval_ns!(gh_empty, "github", "", EvalResultLevel::Invalid); // empty for github
+    test_eval_ns!(
+        gh_trailslash,
+        "github",
+        "ja-he/",
+        EvalResultLevel::AtLeastValid
+    );
+    test_eval_ns!(
+        gh_trailslash_many,
+        "github",
+        "ja-he////",
+        EvalResultLevel::AtLeastValid
+    );
+    test_eval_ns!(
+        gh_leadslash_many,
+        "github",
+        "////ja-he",
+        EvalResultLevel::AtLeastValid
+    );
+    test_eval_ns!(
+        gh_lead_and_trailslash,
+        "github",
+        "////ja-he//",
+        EvalResultLevel::AtLeastValid
+    );
+    test_eval_ns!(gh_two_parts, "github", "ja/he", EvalResultLevel::Invalid); // more than 1 for github
+    test_eval_ns!(
+        github_underscore,
+        "github",
+        "ja_he",
+        EvalResultLevel::Invalid
+    ); // github does not allow underscores
+    test_eval_ns!(
+        github_trailing_hyphen,
+        "github",
+        "jahe-",
+        EvalResultLevel::Invalid
+    );
+    test_eval_ns!(
+        github_leading_hyphen,
+        "github",
+        "-jahe",
+        EvalResultLevel::Invalid
+    );
 
     macro_rules! test_ord_geq {
         ($name:ident, $l:expr, $r:expr, $expect:expr) => {
@@ -558,100 +585,100 @@ mod tests {
         };
     }
 
-    test_mst!(
+    test_alaga!(
         ve_ve,
         EvalResultLevel::Verified,
         EvalResultLevel::Verified,
-        false
+        true
     );
-    test_mst!(
+    test_alaga!(
         ve_ok,
         EvalResultLevel::Verified,
         EvalResultLevel::ProbablyOk,
-        false
+        true
     );
-    test_mst!(
+    test_alaga!(
         ve_va,
         EvalResultLevel::Verified,
         EvalResultLevel::AtLeastValid,
-        false
+        true
     );
-    test_mst!(
+    test_alaga!(
         ve_in,
         EvalResultLevel::Verified,
         EvalResultLevel::Invalid,
-        false
+        true
     );
-    test_mst!(
+    test_alaga!(
         ok_ve,
         EvalResultLevel::ProbablyOk,
         EvalResultLevel::Verified,
-        true
+        false
     );
-    test_mst!(
+    test_alaga!(
         ok_ok,
         EvalResultLevel::ProbablyOk,
         EvalResultLevel::ProbablyOk,
-        false
+        true
     );
-    test_mst!(
+    test_alaga!(
         ok_va,
         EvalResultLevel::ProbablyOk,
         EvalResultLevel::AtLeastValid,
-        false
+        true
     );
-    test_mst!(
+    test_alaga!(
         ok_in,
         EvalResultLevel::ProbablyOk,
         EvalResultLevel::Invalid,
-        false
+        true
     );
-    test_mst!(
+    test_alaga!(
         va_ve,
         EvalResultLevel::AtLeastValid,
         EvalResultLevel::Verified,
-        true
+        false
     );
-    test_mst!(
+    test_alaga!(
         va_ok,
         EvalResultLevel::AtLeastValid,
         EvalResultLevel::ProbablyOk,
-        true
+        false
     );
-    test_mst!(
+    test_alaga!(
         va_va,
         EvalResultLevel::AtLeastValid,
         EvalResultLevel::AtLeastValid,
-        false
+        true
     );
-    test_mst!(
+    test_alaga!(
         va_in,
         EvalResultLevel::AtLeastValid,
         EvalResultLevel::Invalid,
-        false
+        true
     );
-    test_mst!(
+    test_alaga!(
         in_ve,
         EvalResultLevel::Invalid,
         EvalResultLevel::Verified,
-        true
+        false
     );
-    test_mst!(
+    test_alaga!(
         in_ok,
         EvalResultLevel::Invalid,
         EvalResultLevel::ProbablyOk,
-        true
+        false
     );
-    test_mst!(
+    test_alaga!(
         in_va,
         EvalResultLevel::Invalid,
         EvalResultLevel::AtLeastValid,
-        true
+        false
     );
-    test_mst!(
+    test_alaga!(
         in_in,
         EvalResultLevel::Invalid,
         EvalResultLevel::Invalid,
-        false
+        true
     );
 }

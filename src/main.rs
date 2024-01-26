@@ -29,29 +29,28 @@ fn App() -> impl IntoView {
     leptos_meta::provide_meta_context();
 
     view! {
-        <leptos_meta::Title text="purl Builder"/>
+        <leptos_meta::Title text="purl Builder"></leptos_meta::Title>
         <div id="full-page">
             <div id="header">
-                <div  id="main-title">
+                <div id="main-title">
                     <span id="title-text">"purl Builder"</span>
                     <span id="wip-disclaimer">"under construction"</span>
                 </div>
                 <div id="theme-toggle">
-                    <button id="theme-toggle-button" on:click=move |_| { set_light_theme.update(|prev| { *prev = !*prev }) }>
-                        <Show when=move || light_theme.get() fallback=move || view! { "go dark" }>"go light"</Show>
+                    <button
+                        id="theme-toggle-button"
+                        on:click=move |_| { set_light_theme.update(|prev| { *prev = !*prev }) }
+                    >
+                        <Show when=move || light_theme.get() fallback=move || view! { "go dark" }>
+                            "go light"
+                        </Show>
                     </button>
                 </div>
             </div>
             <div id="main-content">
                 <MainContent/>
             </div>
-            <div id="footer">
-                "Created by "
-                <a href="https://hensel.dev">
-                    "Jan Hensel"
-                </a>
-                "."
-            </div>
+            <div id="footer">"Created by " <a href="https://hensel.dev">"Jan Hensel"</a> "."</div>
         </div>
     }
 }
@@ -74,41 +73,50 @@ fn MainContent() -> impl IntoView {
     let (subpath, set_subpath) = create_signal(None);
 
     let (type_input_option, set_type_input_option) = create_signal(InputOption::Select);
-    let get_type_input_field = move || {
-        match type_input_option.get() {
+    let get_type_input_field = move || match type_input_option.get() {
         InputOption::Select => view! {
-                <select class="purl-component-input" on:change=move |ev| {
+            <select
+                class="purl-component-input"
+                on:change=move |ev| {
                     let new_value = event_target_value(&ev);
                     set_typex(purl_data::PurlType::new(&new_value));
-                }>
-                    {
-                        purl_data::PURL_TYPES.iter()
-                            .map(|t| view! {
-                                <option
-                                    class={ match t.status() {
-                                        purl_data::PurlTypeStatus::WellKnown => "option-well-known",
-                                        purl_data::PurlTypeStatus::Proposed => "option-proposed",
-                                        purl_data::PurlTypeStatus::Other => "option-other", // this case would not happen, normally
-                                    }}
-                                    value=t.to_string()
-                                    selected=move || typex().to_string() == t.to_string()
-                                >
-                                    {t.to_string()}
-                                </option>
-                            })
-                            .collect_view()
-                     }
-                </select>
+                }
+            >
+
+                {purl_data::PURL_TYPES
+                    .iter()
+                    .map(|t| {
+                        view! {
+                            <option
+                                class=match t.status() {
+                                    purl_data::PurlTypeStatus::WellKnown => "option-well-known",
+                                    purl_data::PurlTypeStatus::Proposed => "option-proposed",
+                                    purl_data::PurlTypeStatus::Other => "option-other",
+                                }
+
+                                value=t.to_string()
+                                selected=move || typex().to_string() == t.to_string()
+                            >
+                                {t.to_string()}
+                            </option>
+                        }
+                    })
+                    .collect_view()}
+
+            </select>
         }
         .into_any(),
         InputOption::Raw => view! {
-                <input class="purl-component-input" type="text"
-                    on:input=move |ev| { set_typex(purl_data::PurlType::new(&event_target_value(&ev))); }
-                    prop:value={move || typex().to_string()}
-                />
+            <input
+                class="purl-component-input"
+                type="text"
+                on:input=move |ev| {
+                    set_typex(purl_data::PurlType::new(&event_target_value(&ev)));
+                }
+                prop:value=move || typex().to_string()
+            />
         }
         .into_any(),
-    }
     };
 
     let cycle_type_input_option = move |_| {
@@ -274,7 +282,7 @@ fn MainContent() -> impl IntoView {
     let (active_expensive_check, set_active_expensive_check) =
         create_signal::<Option<CheckType>>(None);
     create_effect(move |_| {
-        let (t, ns, n, v, ok) = full_purl_debounced();
+        let (t, _ns, n, v, ok) = full_purl_debounced();
         if !ok {
             return;
         }
@@ -336,82 +344,117 @@ fn MainContent() -> impl IntoView {
                 <button
                     id="type-input-toggle-button"
                     class="purl-input-options-button"
-                    on:click=cycle_type_input_option>
-                    <Show when=move || { type_input_option() == InputOption::Select } fallback=|| view! {<phosphor_leptos::Cursor class="button-icon" weight=phosphor_leptos::IconWeight::Bold />} >
-                        <phosphor_leptos::PencilSimple class="button-icon" weight=phosphor_leptos::IconWeight::Bold />
+                    on:click=cycle_type_input_option
+                >
+                    <Show
+                        when=move || { type_input_option() == InputOption::Select }
+                        fallback=|| {
+                            view! {
+                                <phosphor_leptos::Cursor
+                                    class="button-icon"
+                                    weight=phosphor_leptos::IconWeight::Bold
+                                ></phosphor_leptos::Cursor>
+                            }
+                        }
+                    >
+                        <phosphor_leptos::PencilSimple
+                            class="button-icon"
+                            weight=phosphor_leptos::IconWeight::Bold
+                        ></phosphor_leptos::PencilSimple>
                     </Show>
                 </button>
             </div>
             <div class="input-row">
                 <span class="input-label">"namespace"</span>
-                <input class="purl-component-input" type="text"
+                <input
+                    class="purl-component-input"
+                    type="text"
                     on:input=move |ev| {
-                        set_namespace(purl_data::PurlComponent::new_naive(&event_target_value(&ev)));
+                        set_namespace(
+                            purl_data::PurlComponent::new_naive(&event_target_value(&ev)),
+                        );
                     }
-                    prop:value={move || namespace().join("/")}
+
+                    prop:value=move || namespace().join("/")
                 />
             </div>
             <div class="input-row">
                 <span class="input-label">"name"</span>
-                <input class="purl-component-input" type="text"
-                    on:input=move |ev| { set_name(urlencoding::encode(&event_target_value(&ev)).into_owned()); }
+                <input
+                    class="purl-component-input"
+                    type="text"
+                    on:input=move |ev| {
+                        set_name(urlencoding::encode(&event_target_value(&ev)).into_owned());
+                    }
                     prop:value=move || urlencoding::decode(&name()).unwrap_or_default().into_owned()
                 />
             </div>
             <div class="input-row">
                 <span class="input-label">"version"</span>
-                <input class="purl-component-input" type="text"
-                    on:input=move |ev| { set_version(
-                        if !event_target_value(&ev).is_empty() {
-                            Some(event_target_value(&ev))
-                        } else {
-                            None
-                        }
-                    ); }
-                    prop:value={move || version().unwrap_or_default()}
+                <input
+                    class="purl-component-input"
+                    type="text"
+                    on:input=move |ev| {
+                        set_version(
+                            if !event_target_value(&ev).is_empty() {
+                                Some(event_target_value(&ev))
+                            } else {
+                                None
+                            },
+                        );
+                    }
+                    prop:value=move || version().unwrap_or_default()
                 />
             </div>
             <div class="input-row">
                 <span class="input-label">"qualifiers"</span>
-                <input class="purl-component-input" type="text"
-                    on:input=move |ev| { set_qualifiers(
-                        if !event_target_value(&ev).is_empty() {
-                            Some(event_target_value(&ev))
-                        } else {
-                            None
-                        }
-                    ); }
-                    prop:value={move || qualifiers().unwrap_or_default()}
+                <input
+                    class="purl-component-input"
+                    type="text"
+                    on:input=move |ev| {
+                        set_qualifiers(
+                            if !event_target_value(&ev).is_empty() {
+                                Some(event_target_value(&ev))
+                            } else {
+                                None
+                            },
+                        );
+                    }
+                    prop:value=move || qualifiers().unwrap_or_default()
                 />
             </div>
             <div class="input-row">
                 <span class="input-label">"subpath"</span>
-                <input class="purl-component-input" type="text"
-                    on:input=move |ev| { set_subpath(
-                        if !event_target_value(&ev).is_empty() {
-                            Some(event_target_value(&ev))
-                        } else {
-                            None
-                        }
-                    ); }
-                    prop:value={move || subpath().unwrap_or_default()}
+                <input
+                    class="purl-component-input"
+                    type="text"
+                    on:input=move |ev| {
+                        set_subpath(
+                            if !event_target_value(&ev).is_empty() {
+                                Some(event_target_value(&ev))
+                            } else {
+                                None
+                            },
+                        );
+                    }
+                    prop:value=move || subpath().unwrap_or_default()
                 />
             </div>
         </div>
 
         <Purl
-            typex={typex}
-            eval_type_result={eval_type_result}
-            namespace={namespace}
-            eval_namespace_result={eval_namespace_result}
-            name={name}
-            eval_name_result={eval_name_result}
-            version={version}
-            eval_version_result={eval_version_result}
-            qualifiers={qualifiers}
-            eval_qualifiers_result={eval_qualifiers_result}
-            subpath={subpath}
-            eval_subpath_result={eval_subpath_result}
+            typex=typex
+            eval_type_result=eval_type_result
+            namespace=namespace
+            eval_namespace_result=eval_namespace_result
+            name=name
+            eval_name_result=eval_name_result
+            version=version
+            eval_version_result=eval_version_result
+            qualifiers=qualifiers
+            eval_qualifiers_result=eval_qualifiers_result
+            subpath=subpath
+            eval_subpath_result=eval_subpath_result
         />
 
         <div class="explanation-box-wrapper">
@@ -421,81 +464,258 @@ fn MainContent() -> impl IntoView {
                     fallback=move || view! { <div class="no-check"></div> }
                 >
                     <div class="active-check">
-                        {
-                            move || {
-                                match active_expensive_check() {
-                                    Some(check) => view! {
-                                        <phosphor_leptos::CircleNotch class="loading-indicator-circular" weight=phosphor_leptos::IconWeight::Bold/>
+
+                        {move || {
+                            match active_expensive_check() {
+                                Some(check) => {
+                                    view! {
+                                        <phosphor_leptos::CircleNotch
+                                            class="loading-indicator-circular"
+                                            weight=phosphor_leptos::IconWeight::Bold
+                                        ></phosphor_leptos::CircleNotch>
                                         <p class="check-explanation">{check.to_string()}</p>
-                                    },
-                                    None => view! {
-                                        <phosphor_leptos::Warning weight=phosphor_leptos::IconWeight::Duotone/>
-                                        <p class="check-explanation">"something went weirdly wrong, but that is fine..."</p>
-                                    },
+                                    }
+                                }
+                                None => {
+                                    view! {
+                                        <phosphor_leptos::Warning weight=phosphor_leptos::IconWeight::Duotone></phosphor_leptos::Warning>
+                                        <p class="check-explanation">
+                                            "something went weirdly wrong, but that is fine..."
+                                        </p>
+                                    }
                                 }
                             }
-                        }
+                        }}
+
                     </div>
                 </Show>
             </div>
-            <div class={get_type_explanation_box_class}>
+            <div class=get_type_explanation_box_class>
                 {move || match eval_type_result() {
-                    purl_eval::EvalResultLevel::Verified => view!{<phosphor_leptos::Checks class="explanation-icon verified" weight=phosphor_leptos::IconWeight::Bold />},
-                    purl_eval::EvalResultLevel::ProbablyOk => view!{<phosphor_leptos::Check class="explanation-icon ok" weight=phosphor_leptos::IconWeight::Bold />}       ,
-                    purl_eval::EvalResultLevel::AtLeastValid => view!{<phosphor_leptos::Question class="explanation-icon valid" weight=phosphor_leptos::IconWeight::Bold />} ,
-                    purl_eval::EvalResultLevel::Invalid => view!{<phosphor_leptos::Warning class="explanation-icon invalid" weight=phosphor_leptos::IconWeight::Bold />},
+                    purl_eval::EvalResultLevel::Verified => {
+                        view! {
+                            <phosphor_leptos::Checks
+                                class="explanation-icon verified"
+                                weight=phosphor_leptos::IconWeight::Bold
+                            ></phosphor_leptos::Checks>
+                        }
+                    }
+                    purl_eval::EvalResultLevel::ProbablyOk => {
+                        view! {
+                            <phosphor_leptos::Check
+                                class="explanation-icon ok"
+                                weight=phosphor_leptos::IconWeight::Bold
+                            ></phosphor_leptos::Check>
+                        }
+                    }
+                    purl_eval::EvalResultLevel::AtLeastValid => {
+                        view! {
+                            <phosphor_leptos::Question
+                                class="explanation-icon valid"
+                                weight=phosphor_leptos::IconWeight::Bold
+                            ></phosphor_leptos::Question>
+                        }
+                    }
+                    purl_eval::EvalResultLevel::Invalid => {
+                        view! {
+                            <phosphor_leptos::Warning
+                                class="explanation-icon invalid"
+                                weight=phosphor_leptos::IconWeight::Bold
+                            ></phosphor_leptos::Warning>
+                        }
+                    }
                 }}
                 <span class="headline">{move || eval_type_result().to_string()}</span>
                 <span class="explanation">{eval_type_result_explanation}</span>
             </div>
-            <div class={get_namespace_explanation_box_class}>
+            <div class=get_namespace_explanation_box_class>
                 {move || match eval_namespace_result() {
-                    purl_eval::EvalResultLevel::Verified => view!{<phosphor_leptos::Checks class="explanation-icon verified" weight=phosphor_leptos::IconWeight::Bold />},
-                    purl_eval::EvalResultLevel::ProbablyOk => view!{<phosphor_leptos::Check class="explanation-icon ok" weight=phosphor_leptos::IconWeight::Bold />}       ,
-                    purl_eval::EvalResultLevel::AtLeastValid => view!{<phosphor_leptos::Question class="explanation-icon valid" weight=phosphor_leptos::IconWeight::Bold />} ,
-                    purl_eval::EvalResultLevel::Invalid => view!{<phosphor_leptos::Warning class="explanation-icon invalid" weight=phosphor_leptos::IconWeight::Bold />},
+                    purl_eval::EvalResultLevel::Verified => {
+                        view! {
+                            <phosphor_leptos::Checks
+                                class="explanation-icon verified"
+                                weight=phosphor_leptos::IconWeight::Bold
+                            ></phosphor_leptos::Checks>
+                        }
+                    }
+                    purl_eval::EvalResultLevel::ProbablyOk => {
+                        view! {
+                            <phosphor_leptos::Check
+                                class="explanation-icon ok"
+                                weight=phosphor_leptos::IconWeight::Bold
+                            ></phosphor_leptos::Check>
+                        }
+                    }
+                    purl_eval::EvalResultLevel::AtLeastValid => {
+                        view! {
+                            <phosphor_leptos::Question
+                                class="explanation-icon valid"
+                                weight=phosphor_leptos::IconWeight::Bold
+                            ></phosphor_leptos::Question>
+                        }
+                    }
+                    purl_eval::EvalResultLevel::Invalid => {
+                        view! {
+                            <phosphor_leptos::Warning
+                                class="explanation-icon invalid"
+                                weight=phosphor_leptos::IconWeight::Bold
+                            ></phosphor_leptos::Warning>
+                        }
+                    }
                 }}
-                <span class="headline">{move || {eval_namespace_result().to_string()}}</span>
+                <span class="headline">{move || { eval_namespace_result().to_string() }}</span>
                 <span class="explanation">{eval_namespace_result_explanation}</span>
             </div>
-            <div class={get_name_explanation_box_class}>
+            <div class=get_name_explanation_box_class>
                 {move || match eval_name_result() {
-                    purl_eval::EvalResultLevel::Verified => view!{<phosphor_leptos::Checks class="explanation-icon verified" weight=phosphor_leptos::IconWeight::Bold />},
-                    purl_eval::EvalResultLevel::ProbablyOk => view!{<phosphor_leptos::Check class="explanation-icon ok" weight=phosphor_leptos::IconWeight::Bold />}       ,
-                    purl_eval::EvalResultLevel::AtLeastValid => view!{<phosphor_leptos::Question class="explanation-icon valid" weight=phosphor_leptos::IconWeight::Bold />} ,
-                    purl_eval::EvalResultLevel::Invalid => view!{<phosphor_leptos::Warning class="explanation-icon invalid" weight=phosphor_leptos::IconWeight::Bold />},
+                    purl_eval::EvalResultLevel::Verified => {
+                        view! {
+                            <phosphor_leptos::Checks
+                                class="explanation-icon verified"
+                                weight=phosphor_leptos::IconWeight::Bold
+                            ></phosphor_leptos::Checks>
+                        }
+                    }
+                    purl_eval::EvalResultLevel::ProbablyOk => {
+                        view! {
+                            <phosphor_leptos::Check
+                                class="explanation-icon ok"
+                                weight=phosphor_leptos::IconWeight::Bold
+                            ></phosphor_leptos::Check>
+                        }
+                    }
+                    purl_eval::EvalResultLevel::AtLeastValid => {
+                        view! {
+                            <phosphor_leptos::Question
+                                class="explanation-icon valid"
+                                weight=phosphor_leptos::IconWeight::Bold
+                            ></phosphor_leptos::Question>
+                        }
+                    }
+                    purl_eval::EvalResultLevel::Invalid => {
+                        view! {
+                            <phosphor_leptos::Warning
+                                class="explanation-icon invalid"
+                                weight=phosphor_leptos::IconWeight::Bold
+                            ></phosphor_leptos::Warning>
+                        }
+                    }
                 }}
-                <span class="headline">{move || {eval_name_result().to_string()}}</span>
+                <span class="headline">{move || { eval_name_result().to_string() }}</span>
                 <span class="explanation">{eval_name_result_explanation}</span>
             </div>
-            <div class={get_version_explanation_box_class}>
+            <div class=get_version_explanation_box_class>
                 {move || match eval_version_result() {
-                    purl_eval::EvalResultLevel::Verified => view!{<phosphor_leptos::Checks class="explanation-icon verified" weight=phosphor_leptos::IconWeight::Bold />},
-                    purl_eval::EvalResultLevel::ProbablyOk => view!{<phosphor_leptos::Check class="explanation-icon ok" weight=phosphor_leptos::IconWeight::Bold />}       ,
-                    purl_eval::EvalResultLevel::AtLeastValid => view!{<phosphor_leptos::Question class="explanation-icon valid" weight=phosphor_leptos::IconWeight::Bold />} ,
-                    purl_eval::EvalResultLevel::Invalid => view!{<phosphor_leptos::Warning class="explanation-icon invalid" weight=phosphor_leptos::IconWeight::Bold />},
+                    purl_eval::EvalResultLevel::Verified => {
+                        view! {
+                            <phosphor_leptos::Checks
+                                class="explanation-icon verified"
+                                weight=phosphor_leptos::IconWeight::Bold
+                            ></phosphor_leptos::Checks>
+                        }
+                    }
+                    purl_eval::EvalResultLevel::ProbablyOk => {
+                        view! {
+                            <phosphor_leptos::Check
+                                class="explanation-icon ok"
+                                weight=phosphor_leptos::IconWeight::Bold
+                            ></phosphor_leptos::Check>
+                        }
+                    }
+                    purl_eval::EvalResultLevel::AtLeastValid => {
+                        view! {
+                            <phosphor_leptos::Question
+                                class="explanation-icon valid"
+                                weight=phosphor_leptos::IconWeight::Bold
+                            ></phosphor_leptos::Question>
+                        }
+                    }
+                    purl_eval::EvalResultLevel::Invalid => {
+                        view! {
+                            <phosphor_leptos::Warning
+                                class="explanation-icon invalid"
+                                weight=phosphor_leptos::IconWeight::Bold
+                            ></phosphor_leptos::Warning>
+                        }
+                    }
                 }}
-                <span class="headline">{move || {eval_version_result().to_string()}}</span>
+                <span class="headline">{move || { eval_version_result().to_string() }}</span>
                 <span class="explanation">{eval_version_result_explanation}</span>
             </div>
-            <div class={get_qualifiers_explanation_box_class}>
+            <div class=get_qualifiers_explanation_box_class>
                 {move || match eval_qualifiers_result() {
-                    purl_eval::EvalResultLevel::Verified => view!{<phosphor_leptos::Checks class="explanation-icon verified" weight=phosphor_leptos::IconWeight::Bold />},
-                    purl_eval::EvalResultLevel::ProbablyOk => view!{<phosphor_leptos::Check class="explanation-icon ok" weight=phosphor_leptos::IconWeight::Bold />}       ,
-                    purl_eval::EvalResultLevel::AtLeastValid => view!{<phosphor_leptos::Question class="explanation-icon valid" weight=phosphor_leptos::IconWeight::Bold />} ,
-                    purl_eval::EvalResultLevel::Invalid => view!{<phosphor_leptos::Warning class="explanation-icon invalid" weight=phosphor_leptos::IconWeight::Bold />},
+                    purl_eval::EvalResultLevel::Verified => {
+                        view! {
+                            <phosphor_leptos::Checks
+                                class="explanation-icon verified"
+                                weight=phosphor_leptos::IconWeight::Bold
+                            ></phosphor_leptos::Checks>
+                        }
+                    }
+                    purl_eval::EvalResultLevel::ProbablyOk => {
+                        view! {
+                            <phosphor_leptos::Check
+                                class="explanation-icon ok"
+                                weight=phosphor_leptos::IconWeight::Bold
+                            ></phosphor_leptos::Check>
+                        }
+                    }
+                    purl_eval::EvalResultLevel::AtLeastValid => {
+                        view! {
+                            <phosphor_leptos::Question
+                                class="explanation-icon valid"
+                                weight=phosphor_leptos::IconWeight::Bold
+                            ></phosphor_leptos::Question>
+                        }
+                    }
+                    purl_eval::EvalResultLevel::Invalid => {
+                        view! {
+                            <phosphor_leptos::Warning
+                                class="explanation-icon invalid"
+                                weight=phosphor_leptos::IconWeight::Bold
+                            ></phosphor_leptos::Warning>
+                        }
+                    }
                 }}
-                <span class="headline">{move || {eval_qualifiers_result().to_string()}}</span>
+                <span class="headline">{move || { eval_qualifiers_result().to_string() }}</span>
                 <span class="explanation">{eval_qualifiers_result_explanation}</span>
             </div>
-            <div class={get_subpath_explanation_box_class}>
+            <div class=get_subpath_explanation_box_class>
                 {move || match eval_subpath_result() {
-                    purl_eval::EvalResultLevel::Verified => view!{<phosphor_leptos::Checks class="explanation-icon verified" weight=phosphor_leptos::IconWeight::Bold />},
-                    purl_eval::EvalResultLevel::ProbablyOk => view!{<phosphor_leptos::Check class="explanation-icon ok" weight=phosphor_leptos::IconWeight::Bold />}       ,
-                    purl_eval::EvalResultLevel::AtLeastValid => view!{<phosphor_leptos::Question class="explanation-icon valid" weight=phosphor_leptos::IconWeight::Bold />} ,
-                    purl_eval::EvalResultLevel::Invalid => view!{<phosphor_leptos::Warning class="explanation-icon invalid" weight=phosphor_leptos::IconWeight::Bold />},
+                    purl_eval::EvalResultLevel::Verified => {
+                        view! {
+                            <phosphor_leptos::Checks
+                                class="explanation-icon verified"
+                                weight=phosphor_leptos::IconWeight::Bold
+                            ></phosphor_leptos::Checks>
+                        }
+                    }
+                    purl_eval::EvalResultLevel::ProbablyOk => {
+                        view! {
+                            <phosphor_leptos::Check
+                                class="explanation-icon ok"
+                                weight=phosphor_leptos::IconWeight::Bold
+                            ></phosphor_leptos::Check>
+                        }
+                    }
+                    purl_eval::EvalResultLevel::AtLeastValid => {
+                        view! {
+                            <phosphor_leptos::Question
+                                class="explanation-icon valid"
+                                weight=phosphor_leptos::IconWeight::Bold
+                            ></phosphor_leptos::Question>
+                        }
+                    }
+                    purl_eval::EvalResultLevel::Invalid => {
+                        view! {
+                            <phosphor_leptos::Warning
+                                class="explanation-icon invalid"
+                                weight=phosphor_leptos::IconWeight::Bold
+                            ></phosphor_leptos::Warning>
+                        }
+                    }
                 }}
-                <span class="headline">{move || {eval_subpath_result().to_string()}}</span>
+                <span class="headline">{move || { eval_subpath_result().to_string() }}</span>
                 <span class="explanation">{eval_subpath_result_explanation}</span>
             </div>
         </div>
@@ -505,14 +725,40 @@ fn MainContent() -> impl IntoView {
 #[component]
 fn EvalIcon(eval_result: ReadSignal<purl_eval::EvalResult>) -> impl IntoView {
     view! {
-        {
-            match eval_result().level {
-                purl_eval::EvalResultLevel::Verified     => view!{<phosphor_leptos::Checks class="explanation-icon verified" weight=phosphor_leptos::IconWeight::Bold />},
-                purl_eval::EvalResultLevel::ProbablyOk   => view!{<phosphor_leptos::Check class="explanation-icon ok" weight=phosphor_leptos::IconWeight::Bold />}       ,
-                purl_eval::EvalResultLevel::AtLeastValid => view!{<phosphor_leptos::Question class="explanation-icon valid" weight=phosphor_leptos::IconWeight::Bold />} ,
-                purl_eval::EvalResultLevel::Invalid      => view!{<phosphor_leptos::Warning class="explanation-icon invalid" weight=phosphor_leptos::IconWeight::Bold />},
+        {match eval_result().level {
+            purl_eval::EvalResultLevel::Verified => {
+                view! {
+                    <phosphor_leptos::Checks
+                        class="explanation-icon verified"
+                        weight=phosphor_leptos::IconWeight::Bold
+                    ></phosphor_leptos::Checks>
+                }
             }
-        }
+            purl_eval::EvalResultLevel::ProbablyOk => {
+                view! {
+                    <phosphor_leptos::Check
+                        class="explanation-icon ok"
+                        weight=phosphor_leptos::IconWeight::Bold
+                    ></phosphor_leptos::Check>
+                }
+            }
+            purl_eval::EvalResultLevel::AtLeastValid => {
+                view! {
+                    <phosphor_leptos::Question
+                        class="explanation-icon valid"
+                        weight=phosphor_leptos::IconWeight::Bold
+                    ></phosphor_leptos::Question>
+                }
+            }
+            purl_eval::EvalResultLevel::Invalid => {
+                view! {
+                    <phosphor_leptos::Warning
+                        class="explanation-icon invalid"
+                        weight=phosphor_leptos::IconWeight::Bold
+                    ></phosphor_leptos::Warning>
+                }
+            }
+        }}
     }
 }
 
@@ -574,9 +820,7 @@ fn Purl(
         view! {
             <Show when=move || !namespace().as_canonical().is_empty()>
                 <span class="purl-sep">"/"</span>
-                <span class={get_purl_namespace_classes}>
-                    {namespace_view}
-                </span>
+                <span class=get_purl_namespace_classes>{namespace_view}</span>
             </Show>
         }
     };
@@ -586,34 +830,50 @@ fn Purl(
         <div class="purl">
             <span class="purl-scheme">"pkg"</span>
             <span class="purl-sep">:</span>
-            <span class=get_purl_type_classes>{move || typex.with(purl_data::PurlType::to_string)}</span>
+            <span class=get_purl_type_classes>
+                {move || typex.with(purl_data::PurlType::to_string)}
+            </span>
             {namespace_and_leading_slash}
             <span class="purl-sep">/</span>
             <span class=get_purl_name_classes>{name}</span>
-            { move || {
-                version.get().is_some().then(|| {
-                    view! {
-                        <span class="purl-sep">@</span>
-                        <span class=get_purl_version_classes>{version}</span>
-                    }
-                })
-            }}
-            { move || {
-                qualifiers.get().is_some().then(|| {
-                    view! {
-                        <span class="purl-sep">?</span>
-                        <span class=get_purl_qualifiers_classes>{move || qualifiers.get()}</span>
-                    }
-                })
-            }}
             {move || {
-                subpath.get().is_some().then(|| {
-                    view! {
-                        <span class="purl-sep">#</span>
-                        <span class=get_purl_subpath_classes>{subpath}</span>
-                    }
-                })
+                version
+                    .get()
+                    .is_some()
+                    .then(|| {
+                        view! {
+                            <span class="purl-sep">@</span>
+                            <span class=get_purl_version_classes>{version}</span>
+                        }
+                    })
             }}
+
+            {move || {
+                qualifiers
+                    .get()
+                    .is_some()
+                    .then(|| {
+                        view! {
+                            <span class="purl-sep">?</span>
+                            <span class=get_purl_qualifiers_classes>
+                                {move || qualifiers.get()}
+                            </span>
+                        }
+                    })
+            }}
+
+            {move || {
+                subpath
+                    .get()
+                    .is_some()
+                    .then(|| {
+                        view! {
+                            <span class="purl-sep">#</span>
+                            <span class=get_purl_subpath_classes>{subpath}</span>
+                        }
+                    })
+            }}
+
         </div>
     }
 }
