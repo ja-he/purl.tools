@@ -10,6 +10,19 @@ extern crate lazy_static;
 mod purl_eval;
 mod purl_eval_cratesio;
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum CheckType {
+    CratesIo,
+}
+
+impl std::fmt::Display for CheckType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            CheckType::CratesIo => write!(f, "crates.io"),
+        }
+    }
+}
+
 #[component]
 fn App() -> impl IntoView {
     let (light_theme, set_light_theme) = create_signal(true);
@@ -253,7 +266,10 @@ fn MainContent() -> impl IntoView {
             )
         }),
         1000.0,
+       
+       
     );
+    let (active_expensive_check, set_active_expensive_check) = create_signal::<Option<CheckType>>(None);
     create_effect(move |_| {
         let (t, ns, n, v, ok) = full_purl_debounced();
         log::debug!("running checker effect");
@@ -266,6 +282,7 @@ fn MainContent() -> impl IntoView {
             log::debug!("doing the crates.io API call!");
 
             spawn_local(async move {
+                set_active_expensive_check(Some(CheckType::CratesIo));
                 if let Ok(versions) = purl_eval_cratesio::get_versions(&n).await {
                     set_eval_name(purl_eval::EvalResult {
                         level: purl_eval::EvalResultLevel::Verified,
@@ -287,6 +304,7 @@ fn MainContent() -> impl IntoView {
                         explanation: "not found on crates.io".to_string(),
                     });
                 }
+                set_active_expensive_check(None);
             });
         }
     });
@@ -395,6 +413,29 @@ fn MainContent() -> impl IntoView {
         />
 
         <div class="explanation-box-wrapper">
+            <div class="check-indicator">
+                <Show
+                    when=move || active_expensive_check().is_some()
+                    fallback=move || view! { <div class="no-check"></div> }
+                >
+                    <div class="active-check">
+                        {
+                            move || {
+                                match active_expensive_check() {
+                                    Some(check) => view! {
+                                        <phosphor_leptos::CircleNotch class="loading-indicator-circular" weight=phosphor_leptos::IconWeight::Bold/>
+                                        <p class="check-explanation">{check.to_string()}</p>
+                                    },
+                                    None => view! {
+                                        <phosphor_leptos::Warning weight=phosphor_leptos::IconWeight::Duotone/>
+                                        <p class="check-explanation">"something went weirdly wrong, but that is fine..."</p>
+                                    },
+                                }
+                            }
+                        }
+                    </div>
+                </Show>
+            </div>
             <div class={get_type_explanation_box_class}>
                 {move || match eval_type_result() {
                     purl_eval::EvalResultLevel::Verified => view!{<phosphor_leptos::Checks class="explanation-icon verified" weight=phosphor_leptos::IconWeight::Bold />},
