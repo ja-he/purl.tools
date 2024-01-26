@@ -144,12 +144,12 @@ pub fn eval_purl_namespace(
     match typex {
         PurlType::Github => {
             if canonical.iter().any(|s| !GITHUB_USERNAME_REGEX.is_match(s)) {
-                findings.push( EvalResult{level:EvalResultLevel::Invalid,explanation:"GitHub Namespace does not satisfy restrictions 'may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen'".to_string(),});
+                findings.push( EvalResult{level:EvalResultLevel::AtLeastValid,explanation:"GitHub Namespace does not satisfy restrictions 'may only contain alphanumeric characters or single hyphens, and cannot begin or end with a hyphen'".to_string(),});
             }
 
             if canonical.len() != 1 {
                 findings.push(EvalResult {
-                    level: EvalResultLevel::Invalid,
+                    level: EvalResultLevel::AtLeastValid,
                     explanation: "namespace for GitHub should have one element only".to_string(),
                 });
             }
@@ -163,7 +163,7 @@ pub fn eval_purl_namespace(
         PurlType::Cargo => {
             if !canonical.is_empty() {
                 findings.push(EvalResult {
-                    level: EvalResultLevel::Invalid,
+                    level: EvalResultLevel::AtLeastValid,
                     explanation: "namespace for Cargo (crates.io) should be empty".to_string(),
                 });
             }
@@ -295,7 +295,7 @@ mod tests {
     }
 
     test_eval_ns!(gh_normal, "github", "ja-he", EvalResultLevel::ProbablyOk);
-    test_eval_ns!(gh_empty, "github", "", EvalResultLevel::Invalid); // empty for github
+    test_eval_ns!(gh_empty, "github", "", EvalResultLevel::AtLeastValid); // empty for github
     test_eval_ns!(
         gh_trailslash,
         "github",
@@ -320,24 +320,29 @@ mod tests {
         "////ja-he//",
         EvalResultLevel::AtLeastValid
     );
-    test_eval_ns!(gh_two_parts, "github", "ja/he", EvalResultLevel::Invalid); // more than 1 for github
+    test_eval_ns!(
+        gh_two_parts,
+        "github",
+        "ja/he",
+        EvalResultLevel::AtLeastValid
+    ); // more than 1 for github
     test_eval_ns!(
         github_underscore,
         "github",
         "ja_he",
-        EvalResultLevel::Invalid
+        EvalResultLevel::AtLeastValid
     ); // github does not allow underscores
     test_eval_ns!(
         github_trailing_hyphen,
         "github",
         "jahe-",
-        EvalResultLevel::Invalid
+        EvalResultLevel::AtLeastValid
     );
     test_eval_ns!(
         github_leading_hyphen,
         "github",
         "-jahe",
-        EvalResultLevel::Invalid
+        EvalResultLevel::AtLeastValid
     );
 
     macro_rules! test_ord_geq {
