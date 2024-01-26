@@ -179,7 +179,11 @@ fn MainContent() -> impl IntoView {
         }
     });
 
-    let eval_version = move || purl_eval::eval_purl_version(version());
+    let (eval_version, set_eval_version) = create_signal(purl_eval::EvalResult {
+        level: purl_eval::EvalResultLevel::ProbablyOk,
+        explanation: "".to_string(),
+    });
+    create_effect(move |_| set_eval_version(purl_eval::eval_purl_version(version())));
     let (eval_version_result, set_eval_version_result) =
         create_signal(purl_eval::EvalResultLevel::ProbablyOk);
     let (eval_version_result_explanation, set_eval_version_result_explanation) =
@@ -266,10 +270,9 @@ fn MainContent() -> impl IntoView {
             )
         }),
         1000.0,
-       
-       
     );
-    let (active_expensive_check, set_active_expensive_check) = create_signal::<Option<CheckType>>(None);
+    let (active_expensive_check, set_active_expensive_check) =
+        create_signal::<Option<CheckType>>(None);
     create_effect(move |_| {
         let (t, ns, n, v, ok) = full_purl_debounced();
         log::debug!("running checker effect");
@@ -288,17 +291,20 @@ fn MainContent() -> impl IntoView {
                         level: purl_eval::EvalResultLevel::Verified,
                         explanation: "exists on crates.io".to_string(),
                     });
-                    // if let Some(v) = v {
-                    //     if versions.contains(&v) {
-                    //         // Some("crates.io says crate and version exist".to_string())
-                    //     } else {
-                    //         // Some("crates.io says the crate exists but the version does not".to_string())
-                    //     }
-                    // } else {
-                    //     // Some("crates.io says that crate exists, and i don't have a version to check for".to_string())
-                    // }
+                    if let Some(v) = v {
+                        if versions.contains(&v) {
+                            set_eval_version(purl_eval::EvalResult {
+                                level: purl_eval::EvalResultLevel::Verified,
+                                explanation: "exists on crates.io".to_string(),
+                            })
+                        } else {
+                            set_eval_version(purl_eval::EvalResult {
+                                level: purl_eval::EvalResultLevel::AtLeastValid,
+                                explanation: "not found on crates.io".to_string(),
+                            })
+                        }
+                    }
                 } else {
-                    // Some("this crate seems to not exist".to_string())
                     set_eval_name(purl_eval::EvalResult {
                         level: purl_eval::EvalResultLevel::AtLeastValid,
                         explanation: "not found on crates.io".to_string(),

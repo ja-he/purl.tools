@@ -236,6 +236,7 @@ pub fn eval_purl_name(
     EvalResult::aggregate(&findings)
 }
 
+// TODO
 pub fn eval_purl_version(version: Option<String>) -> EvalResult {
     match version {
         None => EvalResult {
