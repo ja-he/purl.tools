@@ -113,6 +113,7 @@ fn MainContent() -> impl IntoView {
                 on:input=move |ev| {
                     set_typex(purl_data::PurlType::new(&event_target_value(&ev)));
                 }
+
                 prop:value=move || typex().to_string()
             />
         }
@@ -357,6 +358,7 @@ fn MainContent() -> impl IntoView {
                             }
                         }
                     >
+
                         <phosphor_leptos::PencilSimple
                             class="button-icon"
                             weight=phosphor_leptos::IconWeight::Bold
@@ -386,6 +388,7 @@ fn MainContent() -> impl IntoView {
                     on:input=move |ev| {
                         set_name(urlencoding::encode(&event_target_value(&ev)).into_owned());
                     }
+
                     prop:value=move || urlencoding::decode(&name()).unwrap_or_default().into_owned()
                 />
             </div>
@@ -403,6 +406,7 @@ fn MainContent() -> impl IntoView {
                             },
                         );
                     }
+
                     prop:value=move || version().unwrap_or_default()
                 />
             </div>
@@ -420,6 +424,7 @@ fn MainContent() -> impl IntoView {
                             },
                         );
                     }
+
                     prop:value=move || qualifiers().unwrap_or_default()
                 />
             </div>
@@ -437,6 +442,7 @@ fn MainContent() -> impl IntoView {
                             },
                         );
                     }
+
                     prop:value=move || subpath().unwrap_or_default()
                 />
             </div>
