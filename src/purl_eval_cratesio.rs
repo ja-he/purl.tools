@@ -2,6 +2,7 @@ pub async fn get_versions(crate_name: &str) -> leptos::error::Result<Vec<String>
     match reqwasm::http::Request::get(&format!(
         "https://crates.io/api/v1/crates/{crate_name}/versions"
     ))
+    // .header("user-agent", "purl.tools-verifier") // this doesn't work for CORS, i'll have to do some research, bit of a noob on this
     .send()
     .await?
     .json::<CratesioVersionResponse>()
