@@ -275,15 +275,11 @@ fn MainContent() -> impl IntoView {
         create_signal::<Option<CheckType>>(None);
     create_effect(move |_| {
         let (t, ns, n, v, ok) = full_purl_debounced();
-        log::debug!("running checker effect");
         if !ok {
-            log::debug!("not all ok");
             return;
         }
 
         if let purl_data::PurlType::Cargo = t {
-            log::debug!("doing the crates.io API call!");
-
             spawn_local(async move {
                 set_active_expensive_check(Some(CheckType::CratesIo));
                 if let Ok(versions) = purl_eval_cratesio::get_versions(&n).await {
