@@ -264,6 +264,30 @@
     100% { opacity: 1.0; transform: scale(1.0, 1.0); }
   }
 
+  .active-check,.no-check {
+    position: absolute;
+    left: 2em;
+    display: flex;
+    flex-flow: column;
+    align-items: center;
+    justify-items: center;
+    opacity: 0.5;
+  }
+  .no-check { display: none; }
+  .active-check .loading-indicator-circular {
+    font-size: 2em;
+    margin: auto;
+  }
+  .check-explanation {
+    font-size: 0.8em;
+  }
+  .loading-indicator-circular {
+    animation: animate-spin 1s linear infinite;
+  }
+  @keyframes animate-spin {
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
 
   </style>
 
