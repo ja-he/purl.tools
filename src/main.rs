@@ -400,14 +400,18 @@ fn MainContent() -> impl IntoView {
                     on:input=move |ev| {
                         set_version(
                             if !event_target_value(&ev).is_empty() {
-                                Some(event_target_value(&ev))
+                                Some(urlencoding::encode(&event_target_value(&ev)).into_owned())
                             } else {
                                 None
                             },
                         );
                     }
 
-                    prop:value=move || version().unwrap_or_default()
+                    prop:value=move || {
+                        urlencoding::decode(&version().unwrap_or_default())
+                            .unwrap_or_default()
+                            .into_owned()
+                    }
                 />
             </div>
             <div class="input-row">
