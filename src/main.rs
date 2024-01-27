@@ -192,7 +192,14 @@ fn MainContent() -> impl IntoView {
         level: purl_eval::EvalResultLevel::ProbablyOk,
         explanation: "".to_string(),
     });
-    create_effect(move |_| set_eval_version(purl_eval::eval_purl_version(version())));
+    create_effect(move |_| {
+        set_eval_version(purl_eval::eval_purl_version(
+            typex(),
+            namespace(),
+            name(),
+            version(),
+        ))
+    });
     let (eval_version_result, set_eval_version_result) =
         create_signal(purl_eval::EvalResultLevel::ProbablyOk);
     let (eval_version_result_explanation, set_eval_version_result_explanation) =
@@ -413,6 +420,7 @@ fn MainContent() -> impl IntoView {
                             .into_owned()
                     }
                 />
+
             </div>
             <div class="input-row">
                 <span class="input-label">"qualifiers"</span>

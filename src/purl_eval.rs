@@ -229,15 +229,31 @@ pub fn eval_purl_name(
 }
 
 // TODO
-pub fn eval_purl_version(version: Option<String>) -> EvalResult {
+pub fn eval_purl_version(
+    _typex: purl_data::PurlType,
+    _purl_namespace: purl_data::PurlNamespace,
+    _purl_name: String,
+    version: Option<String>,
+) -> EvalResult {
     match version {
         None => EvalResult {
             level: EvalResultLevel::ProbablyOk,
             explanation: "nothing to check on version".to_string(),
         },
         Some(s) => {
-            let mut findings = vec![];
-            EvalResult::aggregate(&findings)
+            match urlencoding::decode(&s) {
+                Err(e) => EvalResult {
+                    level: EvalResultLevel::Invalid,
+                    explanation: format!(
+                        "could not decode, so it must not be a valid percent-encoded string ({e})"
+                    ),
+                },
+                Ok(decoded) => {
+                    let mut findings = vec![];
+                    // TODO
+                    EvalResult::aggregate(&findings)
+                }
+            }
         }
     }
 }
