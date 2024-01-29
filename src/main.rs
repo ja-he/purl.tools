@@ -9,16 +9,19 @@ mod purl_data;
 extern crate lazy_static;
 mod purl_eval;
 mod purl_eval_cratesio;
+mod purl_eval_github;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum CheckType {
     CratesIo,
+    Github,
 }
 
 impl std::fmt::Display for CheckType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             CheckType::CratesIo => write!(f, "crates.io"),
+            CheckType::Github => write!(f, "github.com"),
         }
     }
 }
@@ -147,8 +150,13 @@ fn MainContent() -> impl IntoView {
         }
     });
 
-    let eval_namespace =
-        Signal::derive(move || purl_eval::eval_purl_namespace(namespace(), typex()));
+    let (eval_namespace, set_eval_namespace) = create_signal(purl_eval::EvalResult {
+        level: purl_eval::EvalResultLevel::ProbablyOk,
+        explanation: "".to_string(),
+    });
+    create_effect(move |_| {
+        set_eval_namespace(purl_eval::eval_purl_namespace(namespace(), typex()))
+    });
     let (eval_namespace_result, set_eval_namespace_result) =
         create_signal(purl_eval::EvalResultLevel::ProbablyOk);
     let (eval_namespace_result_explanation, set_eval_namespace_result_explanation) =
@@ -290,13 +298,13 @@ fn MainContent() -> impl IntoView {
     let (active_expensive_check, set_active_expensive_check) =
         create_signal::<Option<CheckType>>(None);
     create_effect(move |_| {
-        let (t, _ns, n, v, ok) = full_purl_debounced();
+        let (t, ns, n, v, ok) = full_purl_debounced();
         if !ok {
             return;
         }
 
-        if let purl_data::PurlType::Cargo = t {
-            spawn_local(async move {
+        match t {
+            purl_data::PurlType::Cargo => spawn_local(async move {
                 set_active_expensive_check(Some(CheckType::CratesIo));
                 if let Ok(versions) = purl_eval_cratesio::get_versions(&n).await {
                     set_eval_name(purl_eval::EvalResult {
@@ -323,7 +331,87 @@ fn MainContent() -> impl IntoView {
                     });
                 }
                 set_active_expensive_check(None);
-            });
+            }),
+
+            purl_data::PurlType::Github => spawn_local(async move {
+                set_active_expensive_check(Some(CheckType::Github));
+
+                let mut found_version = false;
+                if let Some(v) = v {
+                    match purl_eval_github::repo_exists_with_version(&ns, &n, &v).await {
+                        Ok(found) => {
+                            found_version = found;
+                            if found {
+                                set_eval_version(purl_eval::EvalResult {
+                                    level: purl_eval::EvalResultLevel::Verified,
+                                    explanation: "the version (release tag) exists on GitHub"
+                                        .to_string(),
+                                });
+                                set_eval_name(purl_eval::EvalResult {
+                                    level: purl_eval::EvalResultLevel::Verified,
+                                    explanation: "the repository exists on GitHub".to_string(),
+                                });
+                                set_eval_namespace(purl_eval::EvalResult {
+                                    level: purl_eval::EvalResultLevel::Verified,
+                                    explanation: "the namespace exists on GitHub as a user or org"
+                                        .to_string(),
+                                });
+                            } else {
+                                set_eval_version(purl_eval::EvalResult {
+                                    level: purl_eval::EvalResultLevel::AtLeastValid,
+                                    explanation:
+                                        "the version (release tag) does not exist on GitHub"
+                                            .to_string(),
+                                });
+                            }
+                        }
+                        Err(e) => log::warn!(
+                            "an unexpected error occurred checking for a GitHub repository ({e})"
+                        ),
+                    }
+                }
+
+                if !found_version {
+                    match purl_eval_github::repo_exists(&ns, &n).await {
+                        Ok(true) => {
+                            set_eval_name(purl_eval::EvalResult {
+                                level: purl_eval::EvalResultLevel::Verified,
+                                explanation: "the repository exists on GitHub".to_string(),
+                            });
+                            set_eval_namespace(purl_eval::EvalResult {
+                                level: purl_eval::EvalResultLevel::Verified,
+                                explanation: "the namespace exists on GitHub as a user or org"
+                                    .to_string(),
+                            });
+                        }
+                        Ok(false) => {
+                            set_eval_name(purl_eval::EvalResult {
+                                level: purl_eval::EvalResultLevel::AtLeastValid,
+                                explanation: "did not find the repository on GitHub".to_string(),
+                            });
+                            match purl_eval_github::user_or_org_exists(&ns).await {
+                                Ok(true) => set_eval_namespace(purl_eval::EvalResult {
+                                    level: purl_eval::EvalResultLevel::Verified,
+                                    explanation: "the namespace exists on GitHub as a user or org"
+                                        .to_string(),
+                                }),
+                                Ok(false) => set_eval_namespace(purl_eval::EvalResult {
+                                    level: purl_eval::EvalResultLevel::AtLeastValid,
+                                    explanation: "did not find this as a user or org on GitHub"
+                                        .to_string(),
+                                }),
+                                Err(e) => log::warn!("an unexpected error occurred checking for a GitHub repository ({e})"),
+                            }
+                        }
+                        Err(e) => log::warn!(
+                            "an unexpected error occurred checking for a GitHub repository ({e})"
+                        ),
+                    }
+                }
+
+                set_active_expensive_check(None);
+            }),
+            _ => {}
         }
     });
 

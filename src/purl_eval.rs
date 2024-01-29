@@ -249,6 +249,7 @@ pub fn eval_purl_version(
                     ),
                 },
                 Ok(decoded) => {
+                    let decoded = decoded.into_owned();
                     let mut findings = vec![];
                     // TODO
                     EvalResult::aggregate(&findings)
