@@ -1,6 +1,14 @@
-# purl-builder
+# purl.tools
 
 A nice little web app that helps you build a (useful) purl.
+
+## Status
+
+Work in Progress, but can already be useful.
+
+## Author
+
+- [Jan Hensel](https://hensel.dev)
 
 ## License (`MIT OR Apache-2.0`)
 
