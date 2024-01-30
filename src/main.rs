@@ -38,6 +38,17 @@ fn App() -> impl IntoView {
         <leptos_meta::Title text="purl Builder"></leptos_meta::Title>
         <div id="full-page">
             <div id="header">
+                <div id="main-file-issue-hint">
+                    <a href="https://github.com/ja-he/purl.tools/issues" target="_blank">
+                        <phosphor_leptos::GithubLogo
+                            class="github-hint-icon"
+                            weight=phosphor_leptos::IconWeight::Fill
+                        ></phosphor_leptos::GithubLogo>
+                        <div class="github-hint-text-box">
+                            <span class="github-hint-text">"Got an issue?"</span>
+                        </div>
+                    </a>
+                </div>
                 <div id="main-title">
                     <span id="title-text">"purl Builder"</span>
                     <span id="wip-disclaimer">"under construction"</span>

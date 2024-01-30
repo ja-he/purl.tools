@@ -49,6 +49,41 @@
     grid-template-areas: "left center right";
   }
 
+  #main-file-issue-hint {
+    grid-area: left;
+    width: 100%;
+    height: 100%;
+  }
+  #main-file-issue-hint .github-hint-icon {
+    opacity: 0.25;
+    font-size: 4em;
+    position: absolute;
+    transition: opacity 0.2s ease-in-out;
+    transform: translate(-0.3em, -0.5em) rotate(135deg);
+    color: black;
+  }
+  #main-file-issue-hint:hover .github-hint-icon {
+    animation: animated-octocat 1s ease-in-out;
+    opacity: 1.0;
+  }
+  .github-hint-text-box {
+    position: absolute;
+    width: 15em;
+    background-color: black;
+    transform: translate(-4.2em, 1.1em) rotate(-45deg);
+    display: flex;
+  }
+  .github-hint-text {
+    color: white;
+    margin: auto;
+  }
+  @keyframes animated-octocat {
+    0%   { transform:  translate(-0.3em, -0.5em) rotate(135deg); }
+    25%  { transform:  translate(-0.3em, -0.5em) rotate(140deg); }
+    75%  { transform:  translate(-0.3em, -0.5em) rotate(130deg); }
+    100% { transform:  translate(-0.3em, -0.5em) rotate(135deg); }
+  }
+
   #main-title {
     grid-area: center;
     font-size: 2em;
