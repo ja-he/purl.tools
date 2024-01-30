@@ -168,6 +168,14 @@ pub fn eval_purl_namespace(
                 });
             }
         }
+        PurlType::Npm => {
+            if !canonical.is_empty() {
+                findings.push(EvalResult {
+                    level: EvalResultLevel::AtLeastValid,
+                    explanation: "namespace for NPM (npmjs.org) should be empty".to_string(),
+                });
+            }
+        }
         _ => {
             findings.push(EvalResult {
                 level: EvalResultLevel::ProbablyOk,
