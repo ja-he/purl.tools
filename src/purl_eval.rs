@@ -166,6 +166,11 @@ pub fn eval_purl_namespace(
                     level: EvalResultLevel::AtLeastValid,
                     explanation: "namespace for Cargo (crates.io) should be empty".to_string(),
                 });
+            } else {
+                findings.push(EvalResult {
+                    level: EvalResultLevel::Verified,
+                    explanation: "empty namespace for Cargo (crates.io) is correct".to_string(),
+                });
             }
         }
         PurlType::Npm => {
@@ -173,6 +178,11 @@ pub fn eval_purl_namespace(
                 findings.push(EvalResult {
                     level: EvalResultLevel::AtLeastValid,
                     explanation: "namespace for NPM (npmjs.org) should be empty".to_string(),
+                });
+            } else {
+                findings.push(EvalResult {
+                    level: EvalResultLevel::Verified,
+                    explanation: "empty namespace for NPM (npmjs.org) is correct".to_string(),
                 });
             }
         }
