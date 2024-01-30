@@ -424,6 +424,23 @@ fn MainContent() -> impl IntoView {
                                 level: purl_eval::EvalResultLevel::Verified,
                                 explanation: "found on NPM".to_string(),
                             });
+                            if let Some(version) = v {
+                                if package
+                                    .versions
+                                    .iter()
+                                    .any(|(version_as_key, _)| *version_as_key == version)
+                                {
+                                    set_eval_version(purl_eval::EvalResult {
+                                        level: purl_eval::EvalResultLevel::Verified,
+                                        explanation: "found on NPM".to_string(),
+                                    });
+                                } else {
+                                    set_eval_version(purl_eval::EvalResult {
+                                        level: purl_eval::EvalResultLevel::AtLeastValid,
+                                        explanation: "not found on NPM".to_string(),
+                                    });
+                                }
+                            }
                         }
                         Ok(None) => {
                             set_eval_name(purl_eval::EvalResult {
