@@ -18,6 +18,21 @@
     --footer-height: 4em;
     --purl-height: 8em;
     --explanations-width: 20em;
+
+    --fg-color:           #000000;
+    --bg-color:           #ffffff;
+    --neutral-offset-bg:  #eeeeee;
+    --hinted-border-color:#cccccc;
+    --purl-deemph-heavy:  #a0a0a0;
+    --purl-deemph-slight: #808080;
+    --red-fg:             #770000;
+    --red-bg:             #ffbbbb;
+    --yellow-fg:          #777700;
+    --yellow-bg:          #ffffbb;
+    --blue-fg:            #002266;
+    --blue-bg:            #aaddff;
+    --green-fg:           #007700;
+    --green-bg:           #bbffbb;
   }
 
   body {
@@ -25,6 +40,9 @@
     width: 100vw;
     min-height: 100vh;
     font-family: Arial, Helvetica, sans-serif;
+
+    background-color: var(--bg-color);
+    color: var(--fg-color);
   }
 
   #full-page {
@@ -60,7 +78,7 @@
     position: absolute;
     transition: opacity 0.2s ease-in-out;
     transform: translate(-0.3em, -0.5em) rotate(135deg);
-    color: black;
+    color: var(--fg-color);
   }
   #main-file-issue-hint:hover .github-hint-icon {
     animation: animated-octocat 1s ease-in-out;
@@ -69,12 +87,12 @@
   .github-hint-text-box {
     position: absolute;
     width: 15em;
-    background-color: black;
+    background-color: var(--fg-color);
     transform: translate(-4.2em, 1.1em) rotate(-45deg);
     display: flex;
   }
   .github-hint-text {
-    color: white;
+    color: var(--bg-color);
     margin: auto;
   }
   @keyframes animated-octocat {
@@ -98,8 +116,8 @@
     width: max-content;
     top: 0;
     left: 50%;
-    background-color: #ffaaaa;
-    color: #440000;
+    background-color: var(--red-bg);
+    color: var(--red-fg);
     /* transform: rotate(-15deg); */
     animation: wiggle 2.5s linear infinite;
     user-select: none;
@@ -149,7 +167,7 @@
     align-self: center;
     font-family: monospace;
     font-size: 1.5em;
-    background-color: #00000011;
+    background-color: var(--neutral-offset-bg);
     padding: 1em;
     border-radius: 0.5em;
     margin: 1em auto;
@@ -160,10 +178,10 @@
   }
 
   .purl-scheme {
-    color: #808080;
+    color: var(--purl-deemph-slight);
   }
   .purl-sep {
-    color: #a0a0a0;
+    color: var(--purl-deemph-heavy);
   }
   .purl-name {
     font-weight: bold;
@@ -183,7 +201,7 @@
     font-family: monospace;
     background-color: white;
     color: black;
-    border: 0.1em solid #cccccc;
+    border: 0.1em solid var(--hinted-border-color);
     border-radius: 0.3em;
   }
   select {
@@ -191,19 +209,19 @@
     font-family: monospace;
     background-color: white;
     color: black;
-    border: 0.1em solid #cccccc;
+    border: 0.1em solid var(--hinted-border-color);
     border-radius: 0.3em;
   }
   button {
     box-sizing: border-box;
     background-color: white;
     color: black;
-    border: 0.1em solid #cccccc;
+    border: 0.1em solid var(--hinted-border-color);
     border-radius: 0.3em;
-    box-shadow: 0.1em 0.1em #cccccc;
+    box-shadow: 0.1em 0.1em var(--hinted-border-color);
   }
   button:hover {
-    background-color: #eeeeee;
+    background-color: var(--neutral-offset-bg);
   }
 
   .input-row {
@@ -236,20 +254,20 @@
   }
 
   .identifier-verified {
-    text-decoration: underline #007700 0.2em;
-    background-color: #bbffbb;
+    text-decoration: underline var(--green-fg) 0.2em;
+    background-color: var(--green-bg);
   }
   .identifier-ok {
-    text-decoration: underline #002266 0.2em;
-    background-color: #aaddff;
+    text-decoration: underline var(--blue-fg) 0.2em;
+    background-color: var(--blue-bg);
   }
   .identifier-valid {
-    text-decoration: underline #777700 0.2em;
-    background-color: #ffffbb;
+    text-decoration: underline var(--yellow-fg) 0.2em;
+    background-color: var(--yellow-bg);
   }
   .identifier-invalid {
-    text-decoration: underline #770000 0.2em;
-    background-color: #ffbbbb;
+    text-decoration: underline var(--red-fg) 0.2em;
+    background-color: var(--red-bg);
   }
   .explanation-box-wrapper {
     align-self: start;
@@ -271,14 +289,14 @@
     grid-template-areas: "icon headline"
                          "icon explanation"
   }
-  .explanation-icon.verified { color: #007700; }
-  .explanation-icon.ok       { color: #002266; }
-  .explanation-icon.valid    { color: #777700; }
-  .explanation-icon.invalid  { color: #770000; }
-  .explanation-box.verified  { background-color: #bbffbb; }
-  .explanation-box.ok        { background-color: #aaddff; }
-  .explanation-box.valid     { background-color: #ffffbb; }
-  .explanation-box.invalid   { background-color: #ffbbbb; }
+  .explanation-icon.verified { color:            var(--green-fg); }
+  .explanation-icon.ok       { color:            var(--blue-fg); }
+  .explanation-icon.valid    { color:            var(--yellow-fg); }
+  .explanation-icon.invalid  { color:            var(--red-fg); }
+  .explanation-box.verified  { background-color: var(--green-bg); }
+  .explanation-box.ok        { background-color: var(--blue-bg); }
+  .explanation-box.valid     { background-color: var(--yellow-bg); }
+  .explanation-box.invalid   { background-color: var(--red-bg); }
   .headline {
     font-weight: bold;
     grid-area: headline;
