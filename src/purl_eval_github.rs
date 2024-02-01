@@ -19,6 +19,11 @@ pub async fn repo_exists_with_version(
         }
     }?;
 
+    // TODO:
+    //   techincally the PURL_TYPES document says that 'version' should map to tag or commit;
+    //   ergo:
+    //     - [ ] support commits
+    //     - [ ] make a decision whether to not support releases on their own
     // if we already find it in the releases, we are happy to end the search there
     if let Some(releases) = releases {
         if releases.iter().any(|release| version == release.name) {
