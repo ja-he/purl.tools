@@ -68,7 +68,7 @@ pub struct NpmPackage {
     //   "bugs": { "url": "https://github.com/expressjs/express/issues" },
 
     //   "license": "MIT"
-    pub license: String,
+    pub license: Option<String>,
     // }
 }
 
