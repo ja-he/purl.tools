@@ -425,48 +425,48 @@ fn MainContent() -> impl IntoView {
 
                 set_active_expensive_check(None);
             }),
-            purl_data::PurlType::Npm => {
-                spawn_local(async move {
-                    set_active_expensive_check(Some(CheckType::Npm));
+            purl_data::PurlType::Npm => spawn_local(async move {
+                set_active_expensive_check(Some(CheckType::Npm));
 
-                    match purl_eval_npm::get_package(&n).await {
-                        Ok(Some(package)) => {
-                            set_eval_name(purl_eval::EvalResult {
-                                level: purl_eval::EvalResultLevel::Verified,
-                                explanation: "found on NPM".to_string(),
-                            });
-                            if let Some(version) = v {
-                                if package
-                                    .versions
-                                    .iter()
-                                    .any(|(version_as_key, _)| *version_as_key == version)
-                                {
-                                    set_eval_version(purl_eval::EvalResult {
-                                        level: purl_eval::EvalResultLevel::Verified,
-                                        explanation: "found on NPM".to_string(),
-                                    });
-                                } else {
-                                    set_eval_version(purl_eval::EvalResult {
-                                        level: purl_eval::EvalResultLevel::AtLeastValid,
-                                        explanation: "not found on NPM".to_string(),
-                                    });
-                                }
+                match purl_eval_npm::get_package(&n).await {
+                    Ok(Some(package)) => {
+                        set_eval_name(purl_eval::EvalResult {
+                            level: purl_eval::EvalResultLevel::Verified,
+                            explanation: "found on NPM".to_string(),
+                        });
+                        if let Some(version) = v {
+                            if package
+                                .versions
+                                .iter()
+                                .any(|(version_as_key, _)| *version_as_key == version)
+                            {
+                                set_eval_version(purl_eval::EvalResult {
+                                    level: purl_eval::EvalResultLevel::Verified,
+                                    explanation: "found on NPM".to_string(),
+                                });
+                            } else {
+                                set_eval_version(purl_eval::EvalResult {
+                                    level: purl_eval::EvalResultLevel::AtLeastValid,
+                                    explanation: "not found on NPM".to_string(),
+                                });
                             }
                         }
-                        Ok(None) => {
-                            set_eval_name(purl_eval::EvalResult {
-                                level: purl_eval::EvalResultLevel::AtLeastValid,
-                                explanation: "did not find this package on NPM".to_string(),
-                            });
-                        }
-                        Err(e) => {
-                            log::warn!("an unexpected error occurred checking for a GitHub repository ({e})");
-                        }
                     }
+                    Ok(None) => {
+                        set_eval_name(purl_eval::EvalResult {
+                            level: purl_eval::EvalResultLevel::AtLeastValid,
+                            explanation: "did not find this package on NPM".to_string(),
+                        });
+                    }
+                    Err(e) => {
+                        log::warn!(
+                            "an unexpected error occurred checking for an NPM project ({e})"
+                        );
+                    }
+                }
 
-                    set_active_expensive_check(None);
-                })
-            }
+                set_active_expensive_check(None);
+            }),
             _ => {}
         }
     });
