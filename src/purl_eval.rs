@@ -186,6 +186,34 @@ pub fn eval_purl_namespace(
                 });
             }
         }
+        PurlType::Alpm => {
+            // for alpm, the namespace should be the vendor, such as "arch", "arch32", "manjaro", ...
+            // (case-insensitive / lowercased)
+
+            if canonical.is_empty() {
+                findings.push(EvalResult {
+                    level: EvalResultLevel::AtLeastValid,
+                    explanation:
+                        "namespace for alpm should not be empty (it should instead be the vendor)"
+                            .to_string(),
+                });
+            } else if canonical.len() > 1 {
+                findings.push(EvalResult {
+                    level: EvalResultLevel::AtLeastValid,
+                    explanation: "namespace for alpm should have one element (the vendor, e.g. \"arch\" or \"manjaro\")".to_string(),
+                });
+            } else {
+                match canonical[0].as_str() {
+                    "arch" => {}
+                    other => {
+                        findings.push(EvalResult {
+                            level: EvalResultLevel::AtLeastValid,
+                            explanation: format!("namespace '{other}' not known / specifically considered in this verification (this does not mean it is wrong, but it cannot be checked here, currently)"),
+                        });
+                    }
+                }
+            }
+        }
         _ => {
             findings.push(EvalResult {
                 level: EvalResultLevel::ProbablyOk,
