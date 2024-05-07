@@ -1,9 +1,18 @@
 use std::collections::HashMap;
 
 pub async fn get_package(package_name: &str) -> leptos::error::Result<Option<NpmPackage>> {
-    let resp = reqwasm::http::Request::get(&format!("https://registry.npmjs.org/{package_name}"))
-        .send()
-        .await?;
+    let resp = match reqwasm::http::Request::get(&format!(
+        "https://registry.npmjs.org/{package_name}"
+    ))
+    .send()
+    .await
+    {
+        Ok(resp) => resp,
+        Err(e) => {
+            log::warn!("got error for NPM package '{package_name}' check, which (anecdotally) seems to indicate that a package does not exist; this is because it seems NPM allows requests for existing packages but CORS-blocks other requests ({e:?})");
+            return Ok(None);
+        }
+    };
     match resp.status() {
         200 => {
             let package: NpmPackage = resp.json().await?;
