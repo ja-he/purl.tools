@@ -9,6 +9,9 @@ pub async fn get_package(package_name: &str) -> leptos::error::Result<Option<Npm
     {
         Ok(resp) => resp,
         Err(e) => {
+            // registry.npmjs.org/<nonexistent-package> returns different
+            // access-control-allow-origin header (and other headers) so requesting nonexistent
+            // packages will result in CORS-blocks
             log::warn!("got error for NPM package '{package_name}' check, which (anecdotally) seems to indicate that a package does not exist; this is because it seems NPM allows requests for existing packages but CORS-blocks other requests ({e:?})");
             return Ok(None);
         }
