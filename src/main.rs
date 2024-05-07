@@ -16,6 +16,7 @@ mod purl_eval_npm;
 enum CheckType {
     CratesIo,
     Github,
+    Debian,
     Npm,
 }
 
@@ -25,6 +26,7 @@ impl std::fmt::Display for CheckType {
             CheckType::CratesIo => write!(f, "crates.io/api/v1"),
             CheckType::Github => write!(f, "api.github.com"),
             CheckType::Npm => write!(f, "registry.npmjs.org"),
+            CheckType::Debian => write!(f, "debian.org"),
         }
     }
 }
@@ -467,6 +469,44 @@ fn MainContent() -> impl IntoView {
 
                 set_active_expensive_check(None);
             }),
+
+            purl_data::PurlType::Deb => spawn_local(async move {
+                let ns = namespace();
+                if ns.len() != 1 {
+                    set_eval_namespace(purl_eval::EvalResult {
+                        level: purl_eval::EvalResultLevel::Invalid,
+                        explanation: "deb namespace must be exactly one component".to_string(),
+                    });
+                }
+                match ns[0].as_str() {
+                    "debian" => {
+                        set_eval_namespace(purl_eval::EvalResult {
+                            level: purl_eval::EvalResultLevel::Verified,
+                            explanation: "debian namespace is correct".to_string(),
+                        });
+                        set_active_expensive_check(Some(CheckType::Debian));
+                        gloo_timers::future::sleep(std::time::Duration::from_secs(2)).await;
+                        set_active_expensive_check(None);
+                    }
+                    "ubuntu" => {
+                        set_eval_namespace(purl_eval::EvalResult {
+                            level: purl_eval::EvalResultLevel::Verified,
+                            explanation: "ubuntu namespace is correct".to_string(),
+                        });
+                        log::warn!("not currently checking for Ubuntu packages");
+                    }
+                    other => {
+                        set_eval_namespace(purl_eval::EvalResult {
+                            level: purl_eval::EvalResultLevel::AtLeastValid,
+                            explanation: format!(
+                                "unknown namespace '{other}' but syntactically correct"
+                            )
+                            .to_string(),
+                        });
+                    }
+                }
+            }),
+
             _ => {}
         }
     });
